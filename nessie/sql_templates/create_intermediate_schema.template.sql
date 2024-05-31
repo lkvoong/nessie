@@ -145,6 +145,9 @@ AS (
  * FULL OUTER JOIN is used to include all sections from Canvas and SIS data, whether integrated or not.
  */
 
+--
+-- BEGIN: LA-1014: update course_sections table to use CD2 schema
+--
 CREATE TABLE {redshift_schema_intermediate}.course_sections
 INTERLEAVED SORTKEY (canvas_course_id, canvas_section_id, sis_term_id, sis_section_id)
 AS (
@@ -154,7 +157,7 @@ AS (
      */
     WITH extracted_section_ids AS (
         SELECT
-            s.canvas_id AS canvas_section_id,
+            s.id AS canvas_section_id,
             CASE
                 /*
                  * Note doubled curly braces in the regexp, escaped for Python string formatting.
@@ -168,13 +171,13 @@ AS (
                     SUBSTRING(s.sis_source_id, 12, 5)::int
                 ELSE NULL END
                 AS sis_section_id
-        FROM {redshift_schema_canvas}.course_section_dim s
+        FROM {redshift_schema_canvas}.course_sections s
     )
     SELECT
-        c.canvas_id AS canvas_course_id,
-        s.canvas_id AS canvas_section_id,
+        c.id AS canvas_course_id,
+        s.id AS canvas_section_id,
         c.name AS canvas_course_name,
-        c.code AS canvas_course_code,
+        c.course_code AS canvas_course_code,
         s.name AS canvas_section_name,
         et.name AS canvas_course_term,
         sc.term_id AS sis_term_id,
@@ -185,10 +188,10 @@ AS (
         sc.section_num AS sis_section_num,
         sc.is_primary AS sis_primary,
         sc.instruction_mode AS sis_instruction_mode
-    FROM {redshift_schema_canvas}.course_section_dim s
-    JOIN {redshift_schema_canvas}.course_dim c
+    FROM {redshift_schema_canvas}.course_sections s
+    JOIN {redshift_schema_canvas}.courses c
         ON s.course_id = c.id
-    JOIN {redshift_schema_canvas}.enrollment_term_dim et
+    JOIN {redshift_schema_canvas}.enrollment_terms et
          ON c.enrollment_term_id = et.id
     LEFT JOIN extracted_section_ids ON s.canvas_id = extracted_section_ids.canvas_section_id
     FULL OUTER JOIN {redshift_schema_edl}.courses sc
@@ -199,10 +202,12 @@ AS (
         AND (s.workflow_state IS NULL OR s.workflow_state != 'deleted')
     /* Clear out duplicates, since SIS data will contain multiple rows for multiple meetings or instructor assignments. */
     GROUP BY
-        c.canvas_id, s.canvas_id, c.name, c.code, s.name, et.name,
+        c.id, s.id, c.name, c.course_code, s.name, et.name,
         sc.term_id, sc.section_id,
         sc.course_display_name, sc.course_title, sc.instruction_format, sc.section_num, sc.is_primary, sc.instruction_mode
 );
+
+-- END: LA-1014: update course_sections table to use CD2 schema
 
 CREATE TABLE {redshift_schema_intermediate}.sis_enrollments
 INTERLEAVED SORTKEY (sis_term_id, sis_section_id, ldap_uid)
