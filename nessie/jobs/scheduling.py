@@ -92,8 +92,10 @@ def schedule_all_jobs(force=False):
     from nessie.jobs.index_enrollments import IndexEnrollments
     from nessie.jobs.migrate_sis_advising_note_attachments import MigrateSisAdvisingNoteAttachments
     from nessie.jobs.query_canvas_data_2_snapshot import QueryCanvasData2Snapshot
+    from nessie.jobs.refresh_boa_rds_data_schema import RefreshBoaRdsDataSchema
     from nessie.jobs.refresh_boac_cache import RefreshBoacCache
     from nessie.jobs.refresh_canvas_data_2_schema import RefreshCanvasData2Schema
+    from nessie.jobs.refresh_canvas_data_catalog import RefreshCanvasDataCatalog
     from nessie.jobs.refresh_sisedo_schema_full import RefreshSisedoSchemaFull
     from nessie.jobs.refresh_sisedo_schema_incremental import RefreshSisedoSchemaIncremental
     from nessie.jobs.resync_canvas_snapshots import ResyncCanvasSnapshots
@@ -105,6 +107,7 @@ def schedule_all_jobs(force=False):
     schedule_job(sched, 'JOB_RESYNC_CANVAS_SNAPSHOTS', ResyncCanvasSnapshots, force)
     schedule_job(sched, 'JOB_IMPORT_ADVISORS', CreateAdvisorSchema, force)
     schedule_job(sched, 'JOB_IMPORT_ADMISSIONS', CreateOUASchema, force)
+    schedule_job(sched, 'JOB_REFRESH_BOA_RDS_DATA_SCHEMA', RefreshBoaRdsDataSchema, force)
     schedule_job(sched, 'JOB_REFRESH_SISEDO_FULL', RefreshSisedoSchemaFull, force)
     schedule_job(sched, 'JOB_REFRESH_SISEDO_INCREMENTAL', RefreshSisedoSchemaIncremental, force)
     schedule_job(sched, 'JOB_IMPORT_STUDENT_POPULATION', ChainedImportStudentPopulation, force)
@@ -123,6 +126,7 @@ def schedule_all_jobs(force=False):
         'JOB_GENERATE_ALL_TABLES',
         [
             CreateTermsSchema,
+            RefreshCanvasDataCatalog,
             GenerateIntermediateTables,
             IndexEnrollments,
             GenerateBoacAnalytics,
