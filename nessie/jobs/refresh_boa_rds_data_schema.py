@@ -42,9 +42,10 @@ class RefreshBoaRdsDataSchema(BackgroundJob):
         return self.create_schema()
 
     def create_schema(self):
-""" Manually set s3_boa_rds_daily in config; UNDO when data files are generated daily
+        """ Manually set s3_boa_rds_daily in config; UNDO when data files are generated daily
         s3_boa_rds_daily = get_s3_boa_rds_data_daily_path()
-"""
+        """
+        s3_boa_rds_daily = app.config['BOA_RDS_TEST_DATE_PATH']
         s3_path = '/'.join([f"s3://{app.config['LOCH_S3_BUCKET']}", s3_boa_rds_daily])
 
         app.logger.info('Executing SQL...')
