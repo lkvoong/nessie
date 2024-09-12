@@ -95,7 +95,6 @@ def schedule_all_jobs(force=False):
     from nessie.jobs.refresh_boa_rds_data_schema import RefreshBoaRdsDataSchema
     from nessie.jobs.refresh_boac_cache import RefreshBoacCache
     from nessie.jobs.refresh_canvas_data_2_schema import RefreshCanvasData2Schema
-    from nessie.jobs.refresh_canvas_data_catalog import RefreshCanvasDataCatalog
     from nessie.jobs.refresh_sisedo_schema_full import RefreshSisedoSchemaFull
     from nessie.jobs.refresh_sisedo_schema_incremental import RefreshSisedoSchemaIncremental
     from nessie.jobs.resync_canvas_snapshots import ResyncCanvasSnapshots
@@ -126,7 +125,6 @@ def schedule_all_jobs(force=False):
         'JOB_GENERATE_ALL_TABLES',
         [
             CreateTermsSchema,
-            RefreshCanvasDataCatalog,
             GenerateIntermediateTables,
             IndexEnrollments,
             GenerateBoacAnalytics,
