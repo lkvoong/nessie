@@ -23,12 +23,12 @@ SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS PROVIDED
 ENHANCEMENTS, OR MODIFICATIONS.
 """
 
-from datetime import datetime, timedelta
-
 from flask import current_app as app
-from nessie.externals import redshift, s3
+from nessie.externals import redshift
 from nessie.jobs.background_job import BackgroundJob, BackgroundJobError, verify_external_schema
-from nessie.lib.util import get_s3_boa_rds_data_daily_path, resolve_sql_template
+from nessie.lib.util import resolve_sql_template
+# UNCOMMENT next line and remove previous line to re-instate get_s3_boa_rds_data_daily_path()
+# from nessie.lib.util import get_s3_boa_rds_data_daily_path, resolve_sql_template
 
 """Logic for BOA RDS Data schema creation and refresh job."""
 
@@ -42,9 +42,8 @@ class RefreshBoaRdsDataSchema(BackgroundJob):
         return self.create_schema()
 
     def create_schema(self):
-        """ Manually set s3_boa_rds_daily in config; UNDO when data files are generated daily
-        s3_boa_rds_daily = get_s3_boa_rds_data_daily_path()
-        """
+        # s3_boa_rds_daily = get_s3_boa_rds_data_daily_path()
+        # UNCOMMENT previous line and remove next to re-instate get_s3_boa_rds_data_daily_path()
         s3_boa_rds_daily = app.config['BOA_RDS_TEST_DATE_PATH']
         s3_path = '/'.join([f"s3://{app.config['LOCH_S3_BUCKET']}", s3_boa_rds_daily])
 
@@ -63,4 +62,3 @@ class RefreshBoaRdsDataSchema(BackgroundJob):
         app.logger.info('Redshift schema created.')
 
         return True
-
