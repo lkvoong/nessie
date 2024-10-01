@@ -61,7 +61,7 @@ CREATE EXTERNAL TABLE "{redshift_schema_boa_rds_data}"."alerts" (
     "sid" VARCHAR(80),
     "alert_type" VARCHAR(80),
     "key" VARCHAR(255),
-    "message" TEXT,
+    "message" VARCHAR(65535),
     "created_at" TIMESTAMP,
     "updated_at" TIMESTAMP,
     "deleted_at" TIMESTAMP
@@ -98,7 +98,7 @@ CREATE EXTERNAL TABLE "{redshift_schema_boa_rds_data}"."authorized_users" (
     "can_access_canvas_data" BOOLEAN,
     "created_by" VARCHAR(255),
     "is_blocked" BOOLEAN,
-    "search_history" VARCHAR(255),
+    "search_history" ARRAY<VARCHAR(255)>,
     "can_access_advising_data" BOOLEAN,
     "degree_progress_permission" VARCHAR(40),
     "automate_degree_progress_permission" BOOLEAN
@@ -134,7 +134,7 @@ CREATE EXTERNAL TABLE "{redshift_schema_boa_rds_data}"."cohort_filters" (
     "filter_criteria" VARCHAR(65535),
     "student_count" INTEGER,
     "alert_count" INTEGER,
-    "sids" VARCHAR(255),
+    "sids" ARRAY<VARCHAR(255)>,
     "domain" VARCHAR(40),
     "owner_id" INTEGER
 )
@@ -151,14 +151,14 @@ CREATE EXTERNAL TABLE "{redshift_schema_boa_rds_data}"."degree_progress_categori
     "parent_category_id" INTEGER,
     "template_id" INTEGER,
     "category_type" VARCHAR(40),
-    "description" TEXT,
+    "description" VARCHAR(65535),
     "name" VARCHAR(255),
     "position" INTEGER,
     "created_at" TIMESTAMP,
     "updated_at" TIMESTAMP,
     "course_units" VARCHAR(255),
     "is_recommended" BOOLEAN,
-    "note" TEXT,
+    "note" VARCHAR(65535),
     "grade" VARCHAR(50),
     "accent_color" VARCHAR(255),
     "is_ignored" BOOLEAN,
@@ -203,7 +203,7 @@ CREATE EXTERNAL TABLE "{redshift_schema_boa_rds_data}"."degree_progress_courses"
     "category_id" INTEGER,
     "grade" VARCHAR(50),
     "display_name" VARCHAR(255),
-    "note" TEXT,
+    "note" VARCHAR(65535),
     "units" NUMERIC,
     "created_at" TIMESTAMP,
     "updated_at" TIMESTAMP,
@@ -224,7 +224,7 @@ LOCATION '{boa_rds_data_path}/degree_progress_courses/'
 --------------------------------------------------------------------------------------
 CREATE EXTERNAL TABLE "{redshift_schema_boa_rds_data}"."degree_progress_notes" (
     "template_id" INTEGER,
-    "body" TEXT,
+    "body" VARCHAR(65535),
     "created_at" TIMESTAMP,
     "updated_at" TIMESTAMP,
     "updated_by" INTEGER
@@ -240,7 +240,7 @@ LOCATION '{boa_rds_data_path}/degree_progress_notes/'
 CREATE EXTERNAL TABLE "{redshift_schema_boa_rds_data}"."degree_progress_templates" (
     "id" INTEGER,
     "degree_name" VARCHAR(255),
-    "advisor_dept_codes" VARCHAR(255),
+    "advisor_dept_codes" ARRAY<VARCHAR(255)>,
     "student_sid" VARCHAR(80),
     "created_at" TIMESTAMP,
     "created_by" INTEGER,
@@ -366,7 +366,7 @@ CREATE EXTERNAL TABLE "{redshift_schema_boa_rds_data}"."note_templates" (
     "creator_id" INTEGER,
     "title" VARCHAR(255),
     "subject" VARCHAR(255),
-    "body" TEXT,
+    "body" VARCHAR(65535),
     "created_at" TIMESTAMP,
     "updated_at" TIMESTAMP,
     "deleted_at" TIMESTAMP,
@@ -400,10 +400,10 @@ CREATE EXTERNAL TABLE "{redshift_schema_boa_rds_data}"."notes" (
     "author_uid" VARCHAR(255),
     "author_name" VARCHAR(255),
     "author_role" VARCHAR(255),
-    "author_dept_codes" VARCHAR(255),
+    "author_dept_codes" ARRAY<VARCHAR(255)>,
     "sid" VARCHAR(80),
     "subject" VARCHAR(255),
-    "body" TEXT,
+    "body" VARCHAR(),
     "created_at" TIMESTAMP,
     "updated_at" TIMESTAMP,
     "deleted_at" TIMESTAMP,
@@ -464,7 +464,7 @@ LOCATION '{boa_rds_data_path}/student_groups/'
 CREATE EXTERNAL TABLE "{redshift_schema_boa_rds_data}"."tool_settings" (
     "id" INTEGER,
     "key" VARCHAR,
-    "value" TEXT,
+    "value" VARCHAR(65535),
     "created_at" TIMESTAMP,
     "updated_at" TIMESTAMP
 )
