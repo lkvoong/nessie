@@ -279,7 +279,7 @@ CREATE EXTERNAL TABLE "{redshift_schema_boa_rds_data}"."json_cache" (
     "created_at" TIMESTAMP,
     "updated_at" TIMESTAMP,
     "id" INTEGER,
-    "key" VARCHAR,
+    "key" VARCHAR(255),
     "json" VARCHAR(65535)
 )
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
@@ -294,7 +294,7 @@ CREATE EXTERNAL TABLE "{redshift_schema_boa_rds_data}"."json_cache_staging" (
     "created_at" TIMESTAMP,
     "updated_at" TIMESTAMP,
     "id" INTEGER,
-    "key" VARCHAR,
+    "key" VARCHAR(255),
     "json" VARCHAR(65535)
 )
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
@@ -403,7 +403,7 @@ CREATE EXTERNAL TABLE "{redshift_schema_boa_rds_data}"."notes" (
     "author_dept_codes" ARRAY<VARCHAR(255)>,
     "sid" VARCHAR(80),
     "subject" VARCHAR(255),
-    "body" VARCHAR(),
+    "body" VARCHAR(65535),
     "created_at" TIMESTAMP,
     "updated_at" TIMESTAMP,
     "deleted_at" TIMESTAMP,
@@ -463,7 +463,7 @@ LOCATION '{boa_rds_data_path}/student_groups/'
 --------------------------------------------------------------------------------------
 CREATE EXTERNAL TABLE "{redshift_schema_boa_rds_data}"."tool_settings" (
     "id" INTEGER,
-    "key" VARCHAR,
+    "key" VARCHAR(255),
     "value" VARCHAR(65535),
     "created_at" TIMESTAMP,
     "updated_at" TIMESTAMP
@@ -523,7 +523,7 @@ LOCATION '{boa_rds_data_path}/university_depts/'
 --------------------------------------------------------------------------------------
 CREATE EXTERNAL TABLE "{redshift_schema_boa_rds_data}"."user_logins" (
     "id" INTEGER,
-    "uid" VARCHAR,
+    "uid" VARCHAR(255),
     "created_at" TIMESTAMP
 )
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
