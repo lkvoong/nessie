@@ -28,7 +28,7 @@ from nessie.externals import redshift
 from nessie.jobs.background_job import BackgroundJob, BackgroundJobError
 from nessie.lib.util import resolve_sql_template
 
-"""Logic for BI REPORTS BOA ADVISING NOTES schema creation and refresh job."""
+"""Logic for BI REPORTS ADVISING NOTES schema creation and refresh job."""
 
 
 class RefreshBiReportsAdvisingNotesSchema(BackgroundJob):
@@ -36,7 +36,7 @@ class RefreshBiReportsAdvisingNotesSchema(BackgroundJob):
     def run(self):
         app.logger.info('Starting BI Reports Advising Notes schema creation job...')
         app.logger.info('Executing SQL...')
-        resolved_ddl = resolve_sql_template('refresh_bi_reports_advising_notes_schema.template.sql')
+        resolved_ddl = resolve_sql_template('create_bi_reports_advising_notes_schema.template.sql')
         if redshift.execute_ddl_script(resolved_ddl):
             app.logger.info(f"Schema '{app.config['REDSHIFT_SCHEMA_BI_ADVISING_NOTES']}' found or created.")
         else:

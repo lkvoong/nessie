@@ -243,10 +243,10 @@ REDSHIFT_APP_BOA_USER = 'boa redshift username'
 RDS_APP_RIPLEY_USER = 'ripley rds username'
 
 # RDS and Redshift readonly roles for dblink user mapping
-LA_REPORTS_DBLINK_GROUP = 'la_reports_dblink_group'
 RDS_DBLINK_ROLE_DAMIEN = 'damien_role'
 RDS_DBLINK_ROLE_DIABLO = 'diablo_role'
 REDSHIFT_DBLINK_GROUP = 'nessie_dblink_group'
+REDSHIFT_LA_REPORTS_DBLINK_GROUP = 'la_reports_dblink_group'
 
 # The following internal schemas are consistent across environments and do not need to be overridden locally.
 REDSHIFT_SCHEMA_ADVISOR_INTERNAL = 'boac_advisor'
@@ -268,7 +268,7 @@ REDSHIFT_SCHEMA_YCBM_INTERNAL = 'ycbm_data'
 # The following external schemas vary between environments and do need to be overridden locally.
 REDSHIFT_SCHEMA_ADVISOR = 'External Advisor schema name'
 REDSHIFT_SCHEMA_ASC_ADVISING_NOTES = 'External ASC Advising Notes schema name'
-REDSHIFT_SCHEMA_BOA_RDS = 'External BOA RDS Data schema name'
+REDSHIFT_SCHEMA_BOA_RDS_DATA = 'External BOA RDS Data schema name'
 REDSHIFT_SCHEMA_CANVAS = 'External Canvas schema name'
 REDSHIFT_SCHEMA_CANVAS_DATA_2 = 'External Canavs Data 2 schema name'
 REDSHIFT_SCHEMA_COE_EXTERNAL = 'External COE schema name'
