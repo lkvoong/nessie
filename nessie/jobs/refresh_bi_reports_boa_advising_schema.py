@@ -31,14 +31,14 @@ from nessie.lib.util import resolve_sql_template
 """Logic for BI REPORTS ADVISING NOTES schema creation and refresh job."""
 
 
-class RefreshBiReportsAdvisingNotesSchema(BackgroundJob):
+class RefreshBiReportsBoaAdvisingSchema(BackgroundJob):
 
     def run(self):
-        app.logger.info('Starting BI Reports Advising Notes schema creation job...')
+        app.logger.info('Starting BI Reports BOA Advising Notes schema creation job...')
         app.logger.info('Executing SQL...')
-        resolved_ddl = resolve_sql_template('create_bi_reports_advising_notes_schema.template.sql')
+        resolved_ddl = resolve_sql_template('create_bi_reports_boa_advising_schema.template.sql')
         if redshift.execute_ddl_script(resolved_ddl):
-            app.logger.info(f"Schema '{app.config['REDSHIFT_SCHEMA_BI_ADVISING_NOTES']}' found or created.")
+            app.logger.info(f"Schema '{app.config['REDSHIFT_SCHEMA_BI_REPORTS_BOA_ADVISING']}' found or created.")
         else:
-            raise BackgroundJobError('BI Reports Advising Notes schema and tables creation failed.')
+            raise BackgroundJobError('BI Reports BOA Advising Notes schema and tables creation failed.')
         return True
