@@ -30,12 +30,12 @@
 
 
 ----------------------------------------------------------------------------------------------------
--- CREATE SCHEMA: "rds_schema_bi_advising_notes"
+-- CREATE SCHEMA: "rds_schema_bi_reports_boa_advising"
 ----------------------------------------------------------------------------------------------------
 
-CREATE SCHEMA IF NOT EXISTS {rds_schema_bi_advising_notes};
-GRANT USAGE ON SCHEMA {rds_schema_bi_advising_notes} TO {rds_app_tableau_user};
-ALTER DEFAULT PRIVILEGES IN SCHEMA {rds_schema_bi_advising_notes}
+CREATE SCHEMA IF NOT EXISTS {rds_schema_bi_reports_boa_advising};
+GRANT USAGE ON SCHEMA {rds_schema_bi_reports_boa_advising} TO {rds_app_tableau_user};
+ALTER DEFAULT PRIVILEGES IN SCHEMA {rds_schema_bi_reports_boa_advising}
   GRANT SELECT ON TABLES TO {rds_app_tableau_user};
 
 
@@ -43,9 +43,9 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA {rds_schema_bi_advising_notes}
 -- CREATE TABLE: notes
 ----------------------------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS {rds_schema_bi_advising_notes}.notes CASCADE;
+DROP TABLE IF EXISTS {rds_schema_bi_reports_boa_advising}.notes CASCADE;
 
-CREATE TABLE IF NOT EXISTS {rds_schema_bi_advising_notes}.notes (
+CREATE TABLE IF NOT EXISTS {rds_schema_bi_reports_boa_advising}.notes (
   note_id INTEGER,
   created_at_pst TIMESTAMP WITH TIME ZONE,
   set_date DATE,
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS {rds_schema_bi_advising_notes}.notes (
   subject VARCHAR(255)
 );
 
-INSERT INTO {rds_schema_bi_advising_notes}.notes (
+INSERT INTO {rds_schema_bi_reports_boa_advising}.notes (
   SELECT *
   FROM dblink('{rds_dblink_to_redshift}', $REDSHIFT$
     SELECT
@@ -74,7 +74,7 @@ INSERT INTO {rds_schema_bi_advising_notes}.notes (
       is_private,
       sid,
       subject
-    FROM {redshift_schema_bi_advising_notes}.notes
+    FROM {redshift_schema_bi_reports_boa_advising}.notes
   $REDSHIFT$)
   AS notes (
     note_id INTEGER,
@@ -96,22 +96,22 @@ INSERT INTO {rds_schema_bi_advising_notes}.notes (
 -- CREATE TABLE: authors
 ----------------------------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS {rds_schema_bi_advising_notes}.authors CASCADE;
+DROP TABLE IF EXISTS {rds_schema_bi_reports_boa_advising}.authors CASCADE;
 
-CREATE TABLE IF NOT EXISTS {rds_schema_bi_advising_notes}.authors (
+CREATE TABLE IF NOT EXISTS {rds_schema_bi_reports_boa_advising}.authors (
   author_uid VARCHAR(255),
   author_name VARCHAR(65535),
   author_aliases VARCHAR(65535)
 );
 
-INSERT INTO {rds_schema_bi_advising_notes}.authors (
+INSERT INTO {rds_schema_bi_reports_boa_advising}.authors (
   SELECT *
   FROM dblink('{rds_dblink_to_redshift}', $REDSHIFT$
     SELECT
       author_uid,
       author_name,
       author_aliases
-    FROM {redshift_schema_bi_advising_notes}.authors
+    FROM {redshift_schema_bi_reports_boa_advising}.authors
   $REDSHIFT$)
   AS authors (
     author_uid VARCHAR(255),
@@ -125,20 +125,20 @@ INSERT INTO {rds_schema_bi_advising_notes}.authors (
 -- CREATE TABLE: departments
 ----------------------------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS {rds_schema_bi_advising_notes}.departments CASCADE;
+DROP TABLE IF EXISTS {rds_schema_bi_reports_boa_advising}.departments CASCADE;
 
-CREATE TABLE IF NOT EXISTS {rds_schema_bi_advising_notes}.departments (
+CREATE TABLE IF NOT EXISTS {rds_schema_bi_reports_boa_advising}.departments (
   dept_code VARCHAR(255),
   dept_name VARCHAR(255)
 );
 
-INSERT INTO {rds_schema_bi_advising_notes}.departments (
+INSERT INTO {rds_schema_bi_reports_boa_advising}.departments (
   SELECT *
   FROM dblink('{rds_dblink_to_redshift}', $REDSHIFT$
     SELECT
       dept_code,
       dept_name
-    FROM {redshift_schema_bi_advising_notes}.departments
+    FROM {redshift_schema_bi_reports_boa_advising}.departments
   $REDSHIFT$)
   AS departments (
     dept_code VARCHAR(255),
@@ -151,20 +151,20 @@ INSERT INTO {rds_schema_bi_advising_notes}.departments (
 -- CREATE TABLE: note_topics
 ----------------------------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS {rds_schema_bi_advising_notes}.note_topics CASCADE;
+DROP TABLE IF EXISTS {rds_schema_bi_reports_boa_advising}.note_topics CASCADE;
 
-CREATE TABLE IF NOT EXISTS {rds_schema_bi_advising_notes}.note_topics (
+CREATE TABLE IF NOT EXISTS {rds_schema_bi_reports_boa_advising}.note_topics (
   note_id INTEGER,
   topic VARCHAR(50)
 );
 
-INSERT INTO {rds_schema_bi_advising_notes}.note_topics (
+INSERT INTO {rds_schema_bi_reports_boa_advising}.note_topics (
   SELECT *
   FROM dblink('{rds_dblink_to_redshift}', $REDSHIFT$
     SELECT
       note_id,
       topic
-    FROM {redshift_schema_bi_advising_notes}.note_topics
+    FROM {redshift_schema_bi_reports_boa_advising}.note_topics
   $REDSHIFT$)
   AS note_topics (
     note_id INTEGER,
@@ -177,22 +177,22 @@ INSERT INTO {rds_schema_bi_advising_notes}.note_topics (
 -- CREATE TABLE: student_groups
 ----------------------------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS {rds_schema_bi_advising_notes}.student_groups CASCADE;
+DROP TABLE IF EXISTS {rds_schema_bi_reports_boa_advising}.student_groups CASCADE;
 
-CREATE TABLE IF NOT EXISTS {rds_schema_bi_advising_notes}.student_groups (
+CREATE TABLE IF NOT EXISTS {rds_schema_bi_reports_boa_advising}.student_groups (
   student_group_id INTEGER,
   student_group_name VARCHAR(255),
   sid VARCHAR(80)
 );
 
-INSERT INTO {rds_schema_bi_advising_notes}.student_groups (
+INSERT INTO {rds_schema_bi_reports_boa_advising}.student_groups (
   SELECT *
   FROM dblink('{rds_dblink_to_redshift}', $REDSHIFT$
     SELECT
       student_group_id,
       student_group_name,
       sid
-    FROM {redshift_schema_bi_advising_notes}.student_groups
+    FROM {redshift_schema_bi_reports_boa_advising}.student_groups
   $REDSHIFT$)
   AS student_groups (
     student_group_id INTEGER,
@@ -206,22 +206,22 @@ INSERT INTO {rds_schema_bi_advising_notes}.student_groups (
 -- CREATE TABLE: student_cohorts
 ----------------------------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS {rds_schema_bi_advising_notes}.student_cohorts CASCADE;
+DROP TABLE IF EXISTS {rds_schema_bi_reports_boa_advising}.student_cohorts CASCADE;
 
-CREATE TABLE IF NOT EXISTS {rds_schema_bi_advising_notes}.student_cohorts (
+CREATE TABLE IF NOT EXISTS {rds_schema_bi_reports_boa_advising}.student_cohorts (
   cohort_id INTEGER,
   cohort_name VARCHAR(255),
   sid VARCHAR(255)
 );
 
-INSERT INTO {rds_schema_bi_advising_notes}.student_cohorts (
+INSERT INTO {rds_schema_bi_reports_boa_advising}.student_cohorts (
   SELECT *
   FROM dblink('{rds_dblink_to_redshift}', $REDSHIFT$
     SELECT
       cohort_id,
       cohort_name,
       sid
-    FROM {redshift_schema_bi_advising_notes}.student_cohorts
+    FROM {redshift_schema_bi_reports_boa_advising}.student_cohorts
   $REDSHIFT$)
   AS student_cohorts (
     cohort_id INTEGER,
@@ -235,9 +235,9 @@ INSERT INTO {rds_schema_bi_advising_notes}.student_cohorts (
 -- CREATE TABLE: students
 ----------------------------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS {rds_schema_bi_advising_notes}.students CASCADE;
+DROP TABLE IF EXISTS {rds_schema_bi_reports_boa_advising}.students CASCADE;
 
-CREATE TABLE IF NOT EXISTS {rds_schema_bi_advising_notes}.students
+CREATE TABLE IF NOT EXISTS {rds_schema_bi_reports_boa_advising}.students
 (
   sid VARCHAR(80),
   student_name VARCHAR(513),
@@ -246,7 +246,7 @@ CREATE TABLE IF NOT EXISTS {rds_schema_bi_advising_notes}.students
   group_list VARCHAR(65535)
 );
 
-INSERT INTO {rds_schema_bi_advising_notes}.students (
+INSERT INTO {rds_schema_bi_reports_boa_advising}.students (
   SELECT *
   FROM dblink('{rds_dblink_to_redshift}', $REDSHIFT$
     SELECT
@@ -255,7 +255,7 @@ INSERT INTO {rds_schema_bi_advising_notes}.students (
       is_manually_added,
       cohort_list,
       group_list
-    FROM {redshift_schema_bi_advising_notes}.students
+    FROM {redshift_schema_bi_reports_boa_advising}.students
   $REDSHIFT$)
   AS students (
     sid VARCHAR(80),
@@ -271,9 +271,9 @@ INSERT INTO {rds_schema_bi_advising_notes}.students (
 -- CREATE TABLE: bi_reports_boa_advising.student_degrees
 ----------------------------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS {rds_schema_bi_advising_notes}.student_degrees CASCADE;
+DROP TABLE IF EXISTS {rds_schema_bi_reports_boa_advising}.student_degrees CASCADE;
 
-CREATE TABLE IF NOT EXISTS {rds_schema_bi_advising_notes}.student_degrees (
+CREATE TABLE IF NOT EXISTS {rds_schema_bi_reports_boa_advising}.student_degrees (
   sid VARCHAR(256),
   degree_date VARCHAR(65535),
   degree_awarded VARCHAR(65535),
@@ -281,7 +281,7 @@ CREATE TABLE IF NOT EXISTS {rds_schema_bi_advising_notes}.student_degrees (
   plan_group VARCHAR(65535)
 );
 
-INSERT INTO {rds_schema_bi_advising_notes}.student_degrees (
+INSERT INTO {rds_schema_bi_reports_boa_advising}.student_degrees (
   SELECT *
   FROM dblink('{rds_dblink_to_redshift}', $REDSHIFT$
     SELECT
@@ -290,7 +290,7 @@ INSERT INTO {rds_schema_bi_advising_notes}.student_degrees (
       degree_awarded,
       plan_type,
       plan_group 
-    FROM {redshift_schema_bi_advising_notes}.student_degrees
+    FROM {redshift_schema_bi_reports_boa_advising}.student_degrees
   $REDSHIFT$)
   AS student_degrees (
     sid VARCHAR(256),

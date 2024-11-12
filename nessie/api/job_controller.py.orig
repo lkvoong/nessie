@@ -63,7 +63,6 @@ from nessie.jobs.index_advising_notes import IndexAdvisingNotes
 from nessie.jobs.index_enrollments import IndexEnrollments
 from nessie.jobs.migrate_sis_advising_note_attachments import MigrateSisAdvisingNoteAttachments
 from nessie.jobs.query_canvas_data_2_snapshot import QueryCanvasData2Snapshot
-from nessie.jobs.refresh_bi_reports_boa_advising_schema import RefreshBiReportsBoaAdvisingSchema
 from nessie.jobs.refresh_boa_rds_data_schema import RefreshBoaRdsDataSchema
 from nessie.jobs.refresh_boac_cache import RefreshBoacCache
 from nessie.jobs.refresh_canvas_data_2_schema import RefreshCanvasData2Schema
@@ -71,10 +70,12 @@ from nessie.jobs.refresh_canvas_data_catalog import RefreshCanvasDataCatalog
 from nessie.jobs.refresh_sisedo_schema_full import RefreshSisedoSchemaFull
 from nessie.jobs.refresh_sisedo_schema_incremental import RefreshSisedoSchemaIncremental
 from nessie.jobs.resync_canvas_snapshots import ResyncCanvasSnapshots
+from nessie.jobs.retrieve_canvas_data_2_snapshots import RetrieveCanvasData2Snapshots
 from nessie.jobs.sync_canvas_requests_snapshots import SyncCanvasRequestsSnapshots
 from nessie.jobs.sync_canvas_snapshots import SyncCanvasSnapshots
 from nessie.jobs.sync_file_to_s3 import SyncFileToS3
 from nessie.jobs.transform_piazza_api_data import TransformPiazzaApiData
+from nessie.jobs.trigger_cd2_query_jobs import TriggerCD2QueryJobs
 from nessie.jobs.verify_sis_advising_note_attachments import VerifySisAdvisingNoteAttachments
 from nessie.lib.http import tolerant_jsonify
 from nessie.lib.metadata import update_canvas_sync_status
@@ -333,13 +334,6 @@ def verify_sis_advising_note_attachments(datestamp):
     return respond_with_status(job_started)
 
 
-@app.route('/api/job/refresh_bi_reports_boa_advising_schema', methods=['POST'])
-@auth_required
-def refresh_bi_reports_boa_advising_schema():
-    job_started = RefreshBiReportsBoaAdvisingSchema().run_async()
-    return respond_with_status(job_started)
-
-
 @app.route('/api/job/refresh_boa_rds_data_schema', methods=['POST'])
 @auth_required
 def refresh_boa_rds_data_schema():
@@ -365,6 +359,13 @@ def refresh_canvas_data_2_schema():
 @auth_required
 def refresh_sisedo_schema_full():
     job_started = RefreshSisedoSchemaFull().run_async()
+    return respond_with_status(job_started)
+
+
+@app.route('/api/job/retrieve_canvas_data_2_snapshots', methods=['POST'])
+@auth_required
+def retrieve_canvas_data_2_snapshots():
+    job_started = RetrieveCanvasData2Snapshots().run_async()
     return respond_with_status(job_started)
 
 
@@ -417,6 +418,13 @@ def sync_file_to_s3():
     if canvas_sync_job_id:
         update_canvas_sync_status(canvas_sync_job_id, key, 'received')
     job_started = SyncFileToS3(url=url, key=key, canvas_sync_job_id=canvas_sync_job_id).run_async()
+    return respond_with_status(job_started)
+
+
+@app.route('/api/job/trigger_cd2_query_jobs', methods=['POST'])
+@auth_required
+def trigger_cd2_query_jobs():
+    job_started = TriggerCD2QueryJobs.run_async()
     return respond_with_status(job_started)
 
 

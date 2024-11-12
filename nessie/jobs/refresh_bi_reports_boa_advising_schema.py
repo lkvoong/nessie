@@ -24,21 +24,29 @@ ENHANCEMENTS, OR MODIFICATIONS.
 """
 
 from flask import current_app as app
-from nessie.externals import redshift
+from nessie.externals import rds, redshift
 from nessie.jobs.background_job import BackgroundJob, BackgroundJobError
 from nessie.lib.util import resolve_sql_template
 
-"""Logic for BI REPORTS ADVISING NOTES schema creation and refresh job."""
+"""Logic for BI Reports BOA Advising Notes Redshift and RDS schema refresh job."""
 
 
-class RefreshBiReportsAdvisingNotesSchema(BackgroundJob):
+class RefreshBiReportsBoaAdvisingSchema(BackgroundJob):
 
     def run(self):
-        app.logger.info('Starting BI Reports Advising Notes schema creation job...')
+        app.logger.info('Starting BI Reports BOA Advising Notes Redshift and RDS schema refresh job...')
         app.logger.info('Executing SQL...')
-        resolved_ddl = resolve_sql_template('create_bi_reports_advising_notes_schema.template.sql')
-        if redshift.execute_ddl_script(resolved_ddl):
-            app.logger.info(f"Schema '{app.config['REDSHIFT_SCHEMA_BI_ADVISING_NOTES']}' found or created.")
+
+        resolved_ddl_redshift = resolve_sql_template(create_bi_reports_boa_advising_schema.template.sql')
+        if redshift.execute_ddl_script(resolved_ddl_redshift):
+            app.logger.info(f'Redshift {redshift_schema_bi_reports_boa_advising} schema refreshed.')
         else:
-            raise BackgroundJobError('BI Reports Advising Notes schema and tables creation failed.')
-        return True
+            raise BackgroundJobError(f'Redshift {redshift_schema_bi_reports_boa_advising} schema failed refresh.')
+
+        resolved_ddl_rds = resolve_sql_template('update_rds_bi_reports_boa_advising.template.sql')
+        if rds.execute(resolved_ddl_rds):
+            app.logger.info(f'RDS {rds_schema_bi_reports_boa_advising} schema refreshed.')
+        else:
+            raise BackgroundJobError(f'RDS {rds_schema_bi_reports_boa_advising} schema failed refresh.')
+
+        return 'BI Reports BOA Advising Notes Redshift and RDS schema refresh job completed.'
