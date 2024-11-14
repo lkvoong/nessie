@@ -214,6 +214,7 @@ RDS_SCHEMA_ADVISING_APPOINTMENTS = 'boac_advising_appointments'
 RDS_SCHEMA_ADVISING_NOTES = 'boac_advising_notes'
 RDS_SCHEMA_ADVISOR = 'boac_advisor'
 RDS_SCHEMA_ASC = 'boac_advising_asc'
+RDS_SCHEMA_BI_REPORTS_BOA_ADVISING = 'bi_reports_boa_advising'
 RDS_SCHEMA_BOAC = 'boac_analytics'
 RDS_SCHEMA_COE = 'boac_advising_coe'
 RDS_SCHEMA_DATA_SCIENCE = 'boac_advising_data_science'
@@ -241,6 +242,9 @@ REDSHIFT_APP_BOA_USER = 'boa redshift username'
 
 # Ripley limited access credentials to nessie rds and redshift
 RDS_APP_RIPLEY_USER = 'ripley rds username'
+
+# Tableau limited access credentials to nessie rds
+RDS_APP_TABLEAU_USER = 'tableau rds username
 
 # RDS and Redshift readonly roles for dblink user mapping
 RDS_DBLINK_ROLE_DAMIEN = 'damien_role'
