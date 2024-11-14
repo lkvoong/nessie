@@ -71,10 +71,12 @@ from nessie.jobs.refresh_canvas_data_catalog import RefreshCanvasDataCatalog
 from nessie.jobs.refresh_sisedo_schema_full import RefreshSisedoSchemaFull
 from nessie.jobs.refresh_sisedo_schema_incremental import RefreshSisedoSchemaIncremental
 from nessie.jobs.resync_canvas_snapshots import ResyncCanvasSnapshots
+from nessie.jobs.retrieve_canvas_data_2_snapshots import RetrieveCanvasData2Snapshots
 from nessie.jobs.sync_canvas_requests_snapshots import SyncCanvasRequestsSnapshots
 from nessie.jobs.sync_canvas_snapshots import SyncCanvasSnapshots
 from nessie.jobs.sync_file_to_s3 import SyncFileToS3
 from nessie.jobs.transform_piazza_api_data import TransformPiazzaApiData
+from nessie.jobs.trigger_cd2_query_jobs import TriggerCD2QueryJobs
 from nessie.jobs.verify_sis_advising_note_attachments import VerifySisAdvisingNoteAttachments
 from nessie.lib.http import tolerant_jsonify
 from nessie.lib.metadata import update_canvas_sync_status
@@ -368,6 +370,13 @@ def refresh_sisedo_schema_full():
     return respond_with_status(job_started)
 
 
+@app.route('/api/job/retrieve_canvas_data_2_snapshots', methods=['POST'])
+@auth_required
+def retrieve_canvas_data_2_snapshots():
+    job_started = RetrieveCanvasData2Snapshots().run_async()
+    return respond_with_status(job_started)
+
+
 @app.route('/api/job/query_canvas_data_2_snapshots', methods=['POST'])
 @auth_required
 def query_canvas_data_2_snapshots():
@@ -417,6 +426,13 @@ def sync_file_to_s3():
     if canvas_sync_job_id:
         update_canvas_sync_status(canvas_sync_job_id, key, 'received')
     job_started = SyncFileToS3(url=url, key=key, canvas_sync_job_id=canvas_sync_job_id).run_async()
+    return respond_with_status(job_started)
+
+
+@app.route('/api/job/trigger_cd2_query_jobs', methods=['POST'])
+@auth_required
+def trigger_cd2_query_jobs():
+    job_started = TriggerCD2QueryJobs.run_async()
     return respond_with_status(job_started)
 
 
