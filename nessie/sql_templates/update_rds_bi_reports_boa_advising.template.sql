@@ -47,7 +47,9 @@ DROP TABLE IF EXISTS {rds_schema_bi_reports_boa_advising}.notes CASCADE;
 
 CREATE TABLE IF NOT EXISTS {rds_schema_bi_reports_boa_advising}.notes (
   note_id INTEGER,
-  created_at_pst TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE,
+  created_at_date_pst DATE,
+  created_at_time_pst VARCHAR(12),
   set_date DATE,
   author_uid VARCHAR(255),
   note_author_name VARCHAR(255),
@@ -64,7 +66,9 @@ INSERT INTO {rds_schema_bi_reports_boa_advising}.notes (
   FROM dblink('{rds_dblink_to_redshift}', $REDSHIFT$
     SELECT
       note_id,
-      created_at_pst,
+      created_at,
+      created_at_date_pst,
+      created_at_time_pst,
       set_date,
       author_uid,
       note_author_name,
@@ -78,7 +82,9 @@ INSERT INTO {rds_schema_bi_reports_boa_advising}.notes (
   $REDSHIFT$)
   AS notes (
     note_id INTEGER,
-    created_at_pst TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE,
+    created_at_date_pst DATE,
+    created_at_time_pst VARCHAR(12),
     set_date DATE,
     author_uid VARCHAR(255),
     note_author_name VARCHAR(255),

@@ -28,13 +28,13 @@ from nessie.externals import rds, redshift
 from nessie.jobs.background_job import BackgroundJob, BackgroundJobError
 from nessie.lib.util import resolve_sql_template
 
-"""Logic for BI Reports BOA Advising Notes Redshift and RDS schema refresh job."""
+"""Logic for BI Reports BOA Advising Notes Redshift schema refresh job."""
 
 
-class RefreshBiReportsBoaAdvisingSchema(BackgroundJob):
+class RefreshBiReportsBoaAdvisingSchemaRedshift(BackgroundJob):
 
     def run(self):
-        app.logger.info('Starting BI Reports BOA Advising Notes Redshift and RDS schema refresh job...')
+        app.logger.info('Starting BI Reports BOA Advising Notes Redshift schema refresh job...')
         app.logger.info('Executing SQL...')
 
         resolved_ddl_redshift = resolve_sql_template('create_bi_reports_boa_advising_schema.template.sql')
@@ -43,10 +43,4 @@ class RefreshBiReportsBoaAdvisingSchema(BackgroundJob):
         else:
             raise BackgroundJobError('Failed to refresh Redshift schema.')
 
-        resolved_ddl_rds = resolve_sql_template('update_rds_bi_reports_boa_advising.template.sql')
-        if rds.execute(resolved_ddl_rds):
-            app.logger.info('RDS schema refreshed.')
-        else:
-            raise BackgroundJobError('Failed to refresh RDS schema.')
-
-        return 'BI Reports BOA Advising Notes Redshift and RDS schema refresh job completed.'
+        return 'BI Reports BOA Advising Notes Redshift schema refresh job completed.'

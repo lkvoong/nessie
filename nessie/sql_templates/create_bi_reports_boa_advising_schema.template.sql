@@ -55,7 +55,9 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA {redshift_schema_bi_reports_boa_advising}
 CREATE TABLE {redshift_schema_bi_reports_boa_advising}.notes AS
 SELECT
   notes.id AS note_id,
-  notes.created_at AT TIME ZONE 'PST' AS created_at_pst,
+  notes.created_at,
+  CONVERT_TIMEZONE('PST8PDT', notes.created_at)::DATE AS created_at_date_pst,
+  TO_CHAR(CONVERT_TIMEZONE('PST8PDT', notes.created_at), 'HH12:MI:SS AM') AS created_at_time_pst,
   notes.set_date,
   notes.author_uid,
   notes.author_name AS note_author_name,
