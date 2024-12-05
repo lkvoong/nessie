@@ -82,16 +82,27 @@ FROM {redshift_schema_boa_rds_data}.notes notes, notes.author_dept_codes as dept
 CREATE TABLE {redshift_schema_bi_reports_boa_advising}.authors AS
 SELECT DISTINCT
   notes.author_uid,
+  advisors.last_name,
+  advisors.first_name,
   COALESCE(
     advisors.first_name || ' ' || advisors.last_name,
     REGEXP_REPLACE(
       LISTAGG(DISTINCT notes.author_name, '|') WITHIN GROUP (ORDER BY notes.updated_at DESC),
-      '[|]+.*$', '')) AS author_name,
-  LISTAGG(DISTINCT notes.author_name, ' | ') WITHIN GROUP (ORDER BY notes.updated_at DESC) AS author_aliases
+      '[|]+.*$', '')) AS full_name,
+  LISTAGG(DISTINCT notes.author_name, ' | ') WITHIN GROUP (ORDER BY notes.updated_at DESC) AS aliases
 FROM {redshift_schema_boa_rds_data}.notes notes
 LEFT JOIN boac_advisor.advisor_attributes advisors
   ON notes.author_uid = advisors.ldap_uid
 GROUP BY notes.author_uid, advisors.last_name, advisors.first_name;
+
+-- For author_uids not in boac_advisor.advisor_attributes, extract first_name and last_name from BOA notes.author_name.
+-- Does not work correctly for last names containing spaces, e.g. unhyphenated compound surnames.
+--
+UPDATE {redshift_schema_bi_reports_boa_advising}.authors
+SET
+  first_name = REGEXP_REPLACE(REGEXP_REPLACE(full_name, ',.*$', ''), '^(.+) ([^ ]+)$', '$1'),
+  last_name = REGEXP_REPLACE(REGEXP_REPLACE(full_name, ',.*$', ''), '^(.+) ([^ ]+)$', '$2')
+WHERE last_name IS NULL;
 
 
 ----------------------------------------------------------------------------------------------------
@@ -154,6 +165,7 @@ FROM {redshift_schema_boa_rds_data}.cohort_filters cohorts, cohorts.sids AS sid;
 -- Includes manually_added_advisees boolean, list of cohorts by sid, list of student groups by sid.
 -- All sids in manually_added_advisees are in notes. 7764 sids are not in a cohort/group.
 -- DO NOT use semicolon as list separator. resolve_sql_template in util.py is not happy with it.
+-- TO DO: will need to handle students that do not have a record in student_profile_index.
 ----------------------------------------------------------------------------------------------------
 
 CREATE TABLE {redshift_schema_bi_reports_boa_advising}.students AS
@@ -185,12 +197,14 @@ groups AS (
 
 SELECT
   distinct_sids.sid,
-  students.first_name || ' ' || students.last_name AS student_name,
+  student_profile_index.last_name AS last_name,
+  student_profile_index.first_name AS first_name,
+  student_profile_index.first_name || ' ' || student_profile_index.last_name AS fullname,
   CASE WHEN added.sid IS NOT NULL THEN TRUE ELSE FALSE END AS is_manually_added,
   cohorts.cohort_list,
   groups.group_list
 FROM distinct_sids
-LEFT JOIN student.student_profile_index students ON distinct_sids.sid = students.sid
+LEFT JOIN student.student_profile_index student_profile_index ON distinct_sids.sid = student_profile_index.sid
 LEFT JOIN {redshift_schema_boa_rds_data}.manually_added_advisees added ON distinct_sids.sid = added.sid
 LEFT JOIN cohorts ON distinct_sids.sid = cohorts.sid
 LEFT JOIN groups ON distinct_sids.sid = groups.sid;

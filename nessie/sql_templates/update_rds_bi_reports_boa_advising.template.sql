@@ -106,7 +106,9 @@ DROP TABLE IF EXISTS {rds_schema_bi_reports_boa_advising}.authors CASCADE;
 
 CREATE TABLE IF NOT EXISTS {rds_schema_bi_reports_boa_advising}.authors (
   author_uid VARCHAR(255),
-  author_name VARCHAR(65535),
+  last_name VARCHAR(255),
+  first_name VARCHAR(255),
+  full_name VARCHAR(255),
   author_aliases VARCHAR(65535)
 );
 
@@ -115,13 +117,17 @@ INSERT INTO {rds_schema_bi_reports_boa_advising}.authors (
   FROM dblink('{rds_dblink_to_redshift}', $REDSHIFT$
     SELECT
       author_uid,
-      author_name,
-      author_aliases
+      last_name,
+      first_name,
+      full_name,
+      aliases
     FROM {redshift_schema_bi_reports_boa_advising}.authors
   $REDSHIFT$)
   AS authors (
     author_uid VARCHAR(255),
-    author_name VARCHAR(65535),
+    last_name VARCHAR(255),
+    first_name VARCHAR(255),
+    full_name VARCHAR(255),
     author_aliases VARCHAR(65535)
   )
 );
@@ -246,7 +252,9 @@ DROP TABLE IF EXISTS {rds_schema_bi_reports_boa_advising}.students CASCADE;
 CREATE TABLE IF NOT EXISTS {rds_schema_bi_reports_boa_advising}.students
 (
   sid VARCHAR(80),
-  student_name VARCHAR(513),
+  last_name VARCHAR(255),
+  first_name VARCHAR(255),
+  full_name VARCHAR(513),
   is_manually_added BOOLEAN,
   cohort_list VARCHAR(65535),
   group_list VARCHAR(65535)
@@ -257,7 +265,9 @@ INSERT INTO {rds_schema_bi_reports_boa_advising}.students (
   FROM dblink('{rds_dblink_to_redshift}', $REDSHIFT$
     SELECT
       sid,
-      student_name,
+      last_name,
+      first_name,
+      full_name,
       is_manually_added,
       cohort_list,
       group_list
@@ -265,7 +275,9 @@ INSERT INTO {rds_schema_bi_reports_boa_advising}.students (
   $REDSHIFT$)
   AS students (
     sid VARCHAR(80),
-    student_name VARCHAR(513),
+    last_name VARCHAR(255),
+    first_name VARCHAR(255),
+    full_name VARCHAR(513),
     is_manually_added BOOLEAN,
     cohort_list VARCHAR(65535),
     group_list VARCHAR(65535)
