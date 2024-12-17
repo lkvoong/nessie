@@ -34,9 +34,11 @@
 ----------------------------------------------------------------------------------------------------
 
 CREATE SCHEMA IF NOT EXISTS {rds_schema_bi_reports_boa_advising};
-GRANT USAGE ON SCHEMA {rds_schema_bi_reports_boa_advising} TO {rds_app_tableau_user};
+
+GRANT USAGE ON SCHEMA {rds_schema_bi_reports_boa_advising} TO {rds_app_tableau_user}, {rds_readonly_role};
+
 ALTER DEFAULT PRIVILEGES IN SCHEMA {rds_schema_bi_reports_boa_advising}
-  GRANT SELECT ON TABLES TO {rds_app_tableau_user};
+  GRANT SELECT ON TABLES TO {rds_app_tableau_user}, {rds_readonly_role};
 
 
 ----------------------------------------------------------------------------------------------------
@@ -106,7 +108,9 @@ DROP TABLE IF EXISTS {rds_schema_bi_reports_boa_advising}.authors CASCADE;
 
 CREATE TABLE IF NOT EXISTS {rds_schema_bi_reports_boa_advising}.authors (
   author_uid VARCHAR(255),
-  author_name VARCHAR(65535),
+  last_name VARCHAR(255),
+  first_name VARCHAR(255),
+  author_name VARCHAR(255),
   author_aliases VARCHAR(65535)
 );
 
@@ -115,13 +119,17 @@ INSERT INTO {rds_schema_bi_reports_boa_advising}.authors (
   FROM dblink('{rds_dblink_to_redshift}', $REDSHIFT$
     SELECT
       author_uid,
+      last_name,
+      first_name,
       author_name,
       author_aliases
     FROM {redshift_schema_bi_reports_boa_advising}.authors
   $REDSHIFT$)
   AS authors (
     author_uid VARCHAR(255),
-    author_name VARCHAR(65535),
+    last_name VARCHAR(255),
+    first_name VARCHAR(255),
+    author_name VARCHAR(255),
     author_aliases VARCHAR(65535)
   )
 );
@@ -246,6 +254,8 @@ DROP TABLE IF EXISTS {rds_schema_bi_reports_boa_advising}.students CASCADE;
 CREATE TABLE IF NOT EXISTS {rds_schema_bi_reports_boa_advising}.students
 (
   sid VARCHAR(80),
+  last_name VARCHAR(255),
+  first_name VARCHAR(255),
   student_name VARCHAR(513),
   is_manually_added BOOLEAN,
   cohort_list VARCHAR(65535),
@@ -257,6 +267,8 @@ INSERT INTO {rds_schema_bi_reports_boa_advising}.students (
   FROM dblink('{rds_dblink_to_redshift}', $REDSHIFT$
     SELECT
       sid,
+      last_name,
+      first_name,
       student_name,
       is_manually_added,
       cohort_list,
@@ -265,6 +277,8 @@ INSERT INTO {rds_schema_bi_reports_boa_advising}.students (
   $REDSHIFT$)
   AS students (
     sid VARCHAR(80),
+    last_name VARCHAR(255),
+    first_name VARCHAR(255),
     student_name VARCHAR(513),
     is_manually_added BOOLEAN,
     cohort_list VARCHAR(65535),
