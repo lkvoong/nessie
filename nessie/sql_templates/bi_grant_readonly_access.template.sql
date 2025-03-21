@@ -25,23 +25,33 @@
 
 
 ----------------------------------------------------------------------------------------------------
--- BEGIN template for granting access privileges to rtl_dla_readonly_role
-- BI_REDSHIFT_SCHEMA_BCOURSES_SERVICE = 'bcourses_service_reports'
+-- BEGIN template for granting access privileges to readonly role
 ----------------------------------------------------------------------------------------------------
 
-/* Nessie Redshift
- * 
+----------------------------------------------------------------------------------------------------
+-- grant usage on specified redshift schemas to readonly group
+----------------------------------------------------------------------------------------------------
 
- */
+GRANT USAGE
+  ON SCHEMA 
+    {redshift_schema_canvas},
+    {redshift_schema_canvas_data_2},
+    {bi_redshift_schema_bcourses_service_cd2},
+    {bi_redshift_schema_boa_advising}
+  TO GROUP {bi_readonly_group};
 
-GRANT USAGE ON SCHEMA {redshift_schema_canvas} TO GROUP {bi_redshift_la_reports_dblink_group};
-GRANT USAGE ON SCHEMA {bi_redshift_schema_bcourses_service_cd2} TO GROUP {bi_redshift_la_reports_dblink_group};
-GRANT USAGE ON SCHEMA {bi_redshift_schema_bcourses_service_cd2} TO GROUP {bi_redshift_la_reports_dblink_group};
-GRANT USAGE ON SCHEMA {bi_redshift_schema_bcourses_service_cd2} TO GROUP {bi_redshift_la_reports_dblink_group};
+----------------------------------------------------------------------------------------------------
+-- grant select on all tables in specified redshift schemas to readonly group
+----------------------------------------------------------------------------------------------------
 
-redshift_schema_canvas
-redshift_schema_canvas_data_2
-bi_redshift_schema_bcourses_service
-bi_redshift_schema_bcourses_service_cd2
+GRANT SELECT ON ALL TABLES
+  IN SCHEMA
+    {redshift_schema_canvas},
+    {redshift_schema_canvas_data_2},
+    {bi_redshift_schema_bcourses_service_cd2},
+    {bi_redshift_schema_boa_advising}
+  TO GROUP dla_readonly_group;
 
-BI_REDSHIFT_SCHEMA_BCOURSES_SERVICE = 'bcourses_service_reports'
+----------------------------------------------------------------------------------------------------
+-- END template for granting access privileges to readonly role
+----------------------------------------------------------------------------------------------------

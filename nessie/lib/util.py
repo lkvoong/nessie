@@ -224,6 +224,7 @@ def resolve_sql_template_string(template_string, **kwargs):
         'bi_rds_ce3_user': app.config['BI_RDS_CE3_USER'],
         'bi_rds_schema_boa_advising': app.config['BI_RDS_SCHEMA_BOA_ADVISING'],
         'bi_rds_tableau_user': app.config['BI_RDS_TABLEAU_USER'],
+        'bi_readonly_group': app.config['BI_READONLY_GROUP'],
         'bi_redshift_la_reports_dblink_group': app.config['BI_REDSHIFT_LA_REPORTS_DBLINK_GROUP'],
         'bi_redshift_schema_boa_rds_data': app.config['BI_REDSHIFT_SCHEMA_BOA_RDS_DATA'],
         'bi_redshift_schema_boa_advising': app.config['BI_REDSHIFT_SCHEMA_BOA_ADVISING'],
