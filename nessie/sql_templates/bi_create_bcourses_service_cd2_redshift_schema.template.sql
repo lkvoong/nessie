@@ -61,8 +61,8 @@ CREATE TABLE {bi_redshift_schema_bcourses_service_cd2}.bcourses_accounts AS
     s.course_academic_dept_nm as dept_nm,
     s.course_academic_division_cd as division_cd,
     s.course_academic_division_nm as division_nm,
-    s.course_reporting_college_school_cd as collect_school_cd,
-    s.course_reporting_college_school_nm as collect_school_nm,
+    s.course_reporting_college_school_cd as college_school_cd,
+    s.course_reporting_college_school_nm as college_school_nm,
     a.workflow_state
   FROM {redshift_schema_canvas_data_2}.accounts a
   LEFT OUTER JOIN {redshift_schema_edl_external}.student_course_academic_hierarchy_data s
