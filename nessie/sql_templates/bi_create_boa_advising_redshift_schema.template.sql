@@ -124,13 +124,29 @@ WHERE n.author_dept_code is not null;
 ----------------------------------------------------------------------------------------------------
 -- INTERNAL TABLE : "note_topics"
 -- Join table of note_id to topic.
+-- TO DO: remove topic field after workbook updated to use materialized views
 ----------------------------------------------------------------------------------------------------
  
 CREATE TABLE {bi_redshift_schema_boa_advising}.note_topics AS
 SELECT
-  note_id,
-  topic
-FROM {bi_redshift_schema_boa_rds_data}.note_topics;
+  nt.note_id,
+  t.id AS topic_id,
+  nt.topic
+FROM {bi_redshift_schema_boa_rds_data}.note_topics nt
+LEFT OUTER JOIN {bi_redshift_schema_boa_rds_data}.topics t ON (nt.topic = t.topic);
+
+
+----------------------------------------------------------------------------------------------------
+-- INTERNAL TABLE : "topics"
+----------------------------------------------------------------------------------------------------
+ 
+CREATE TABLE {bi_redshift_schema_boa_advising}.topics AS
+SELECT
+  id AS topic_id,
+  topic,
+  created_at,
+  deleted_at
+FROM {bi_redshift_schema_boa_rds_data}.topics;
 
 
 ----------------------------------------------------------------------------------------------------
@@ -158,57 +174,6 @@ SELECT
   cohorts.name AS cohort_name,
   sid
 FROM {bi_redshift_schema_boa_rds_data}.cohort_filters cohorts, cohorts.sids AS sid;
-
-
-----------------------------------------------------------------------------------------------------
--- INTERNAL TABLE : "students"
--- Students used in notes.
--- Includes manually_added_advisees boolean, list of cohorts by sid, list of student groups by sid.
--- All sids in manually_added_advisees are in notes. 7764 sids are not in a cohort/group.
--- DO NOT use semicolon as list separator. resolve_sql_template in util.py is not happy with it.
--- TO DO: will need to handle students that do not have a record in student_profile_index.
-----------------------------------------------------------------------------------------------------
-
-CREATE TABLE {bi_redshift_schema_boa_advising}.students AS
-WITH
-distinct_sids AS (
-  SELECT DISTINCT sid
-  FROM {bi_redshift_schema_boa_advising}.notes
-),
-
-cohorts AS (
-  SELECT
-    distinct_sids.sid,
-    LISTAGG(DISTINCT cohorts.cohort_name || ' (' || cohorts.cohort_id || ')', ' | ')
-      WITHIN GROUP (ORDER BY cohorts.cohort_name, cohorts.cohort_id) AS cohort_list
-  FROM distinct_sids
-  LEFT JOIN {bi_redshift_schema_boa_advising}.student_cohorts cohorts ON distinct_sids.sid = cohorts.sid
-  GROUP BY distinct_sids.sid
-),
-
-groups AS (
-  SELECT
-    distinct_sids.sid,
-    LISTAGG(DISTINCT groups.student_group_name || ' (' || groups.student_group_id || ')', ' | ')
-      WITHIN GROUP (ORDER BY groups.student_group_name, groups.student_group_id) AS group_list
-  FROM distinct_sids
-  LEFT JOIN {bi_redshift_schema_boa_advising}.student_groups groups ON distinct_sids.sid = groups.sid
-  GROUP BY distinct_sids.sid
-)
-
-SELECT
-  distinct_sids.sid,
-  student_profile_index.last_name AS last_name,
-  student_profile_index.first_name AS first_name,
-  student_profile_index.first_name || ' ' || student_profile_index.last_name AS student_name,
-  CASE WHEN added.sid IS NOT NULL THEN TRUE ELSE FALSE END AS is_manually_added,
-  cohorts.cohort_list,
-  groups.group_list
-FROM distinct_sids
-LEFT JOIN student.student_profile_index student_profile_index ON distinct_sids.sid = student_profile_index.sid
-LEFT JOIN {bi_redshift_schema_boa_rds_data}.manually_added_advisees added ON distinct_sids.sid = added.sid
-LEFT JOIN cohorts ON distinct_sids.sid = cohorts.sid
-LEFT JOIN groups ON distinct_sids.sid = groups.sid;
 
 
 ----------------------------------------------------------------------------------------------------
@@ -247,6 +212,72 @@ SELECT
   CAST(plan.type AS VARCHAR) AS plan_type,
   CAST(plan.group AS VARCHAR) AS plan_group
 FROM degrees_data d, d.plans AS plan;
+
+
+----------------------------------------------------------------------------------------------------
+-- INTERNAL TABLE : "students"
+-- Students used in notes.
+-- Includes manually_added_advisees boolean, list of cohorts by sid, list of student groups by sid.
+-- All sids in manually_added_advisees are in notes. 7764 sids are not in a cohort/group.
+-- DO NOT use semicolon as list separator. resolve_sql_template in util.py is not happy with it.
+-- TO DO: will need to handle students that do not have a record in student_profile_index.
+----------------------------------------------------------------------------------------------------
+
+CREATE TABLE {bi_redshift_schema_boa_advising}.students AS
+WITH
+distinct_sids AS (
+  SELECT DISTINCT sid
+  FROM {bi_redshift_schema_boa_advising}.notes
+),
+
+cohorts AS (
+  SELECT
+    distinct_sids.sid,
+    LISTAGG(DISTINCT cohorts.cohort_name || ' (' || cohorts.cohort_id || ')', ' | ')
+      WITHIN GROUP (ORDER BY cohorts.cohort_name, cohorts.cohort_id) AS cohort_list
+  FROM distinct_sids
+  LEFT JOIN {bi_redshift_schema_boa_advising}.student_cohorts cohorts ON distinct_sids.sid = cohorts.sid
+  GROUP BY distinct_sids.sid
+),
+
+groups AS (
+  SELECT
+    distinct_sids.sid,
+    LISTAGG(DISTINCT groups.student_group_name || ' (' || groups.student_group_id || ')', ' | ')
+      WITHIN GROUP (ORDER BY groups.student_group_name, groups.student_group_id) AS group_list
+  FROM distinct_sids
+  LEFT JOIN {bi_redshift_schema_boa_advising}.student_groups groups ON distinct_sids.sid = groups.sid
+  GROUP BY distinct_sids.sid
+),
+
+degrees AS (
+  SELECT
+    distinct_sids.sid,
+    LISTAGG(DISTINCT degrees.degree_awarded 
+      || ' (' || degrees.plan_type 
+      || COALESCE(', ' || degrees.degree_date, '') 
+      || ')', ' | ')
+      WITHIN GROUP (ORDER BY degrees.degree_date) AS degree_list
+  FROM distinct_sids
+  LEFT JOIN {bi_redshift_schema_boa_advising}.student_degrees degrees ON distinct_sids.sid = degrees.sid
+  GROUP BY distinct_sids.sid
+)
+
+SELECT
+  distinct_sids.sid,
+  student_profile_index.last_name AS last_name,
+  student_profile_index.first_name AS first_name,
+  student_profile_index.first_name || ' ' || student_profile_index.last_name AS student_name,
+  CASE WHEN added.sid IS NOT NULL THEN TRUE ELSE FALSE END AS is_manually_added,
+  cohorts.cohort_list,
+  groups.group_list,
+  degrees.degree_list
+FROM distinct_sids
+LEFT JOIN student.student_profile_index student_profile_index ON distinct_sids.sid = student_profile_index.sid
+LEFT JOIN {bi_redshift_schema_boa_rds_data}.manually_added_advisees added ON distinct_sids.sid = added.sid
+LEFT JOIN cohorts ON distinct_sids.sid = cohorts.sid
+LEFT JOIN groups ON distinct_sids.sid = groups.sid
+LEFT JOIN degrees ON distinct_sids.sid = degrees.sid;
 
 
 ----------------------------------------------------------------------------------------------------
