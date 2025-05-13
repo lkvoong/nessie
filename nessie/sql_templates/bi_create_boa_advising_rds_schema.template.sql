@@ -122,9 +122,10 @@ CREATE TABLE IF NOT EXISTS {bi_rds_schema_boa_advising}.students
   student_name VARCHAR(513),
   last_name VARCHAR(255),
   first_name VARCHAR(255),
+  is_manually_added BOOLEAN,
   cohort_list VARCHAR(65535),
   group_list VARCHAR(65535),
-  is_manually_added BOOLEAN
+  degree_list VARCHAR(65535)
 );
 
 INSERT INTO {bi_rds_schema_boa_advising}.students (
@@ -136,9 +137,10 @@ INSERT INTO {bi_rds_schema_boa_advising}.students (
       student_name,
       last_name,
       first_name,
+      is_manually_added,
       cohort_list,
       group_list,
-      is_manually_added
+      degree_list
     FROM {bi_redshift_schema_boa_advising}.students
     WHERE sid IS NOT NULL
   $REDSHIFT$)
@@ -148,9 +150,10 @@ INSERT INTO {bi_rds_schema_boa_advising}.students (
     student_name VARCHAR(513),
     last_name VARCHAR(255),
     first_name VARCHAR(255),
+    is_manually_added BOOLEAN,
     cohort_list VARCHAR(65535),
     group_list VARCHAR(65535),
-    is_manually_added BOOLEAN
+    degree_list VARCHAR(65535)
   )
 );
 
@@ -243,6 +246,7 @@ INSERT INTO {bi_rds_schema_boa_advising}.note_topics (
       topic_id,
       topic
     FROM {bi_redshift_schema_boa_advising}.note_topics
+    WHERE topic_id IS NOT NULL
   $REDSHIFT$)
   AS note_topics (
     note_id INTEGER,
@@ -261,24 +265,24 @@ CREATE INDEX idx_bi_note_topics_topic ON {bi_rds_schema_boa_advising}.note_topic
 DROP TABLE IF EXISTS {bi_rds_schema_boa_advising}.topics CASCADE;
 
 CREATE TABLE IF NOT EXISTS {bi_rds_schema_boa_advising}.topics (
-  note_id INTEGER PRIMARY KEY,
+  topic_id INTEGER PRIMARY KEY,
   topic VARCHAR(50),
   created_at TIMESTAMP WITH TIME ZONE,
   deleted_at TIMESTAMP WITH TIME ZONE
 );
 
-INSERT INTO {bi_rds_schema_boa_advising}.note_topics (
+INSERT INTO {bi_rds_schema_boa_advising}.topics (
   SELECT *
   FROM dblink('{rds_dblink_to_redshift}', $REDSHIFT$
-    SELECT DISTINCT
-      note_id,
+    SELECT
+      topic_id,
       topic,
       created_at,
       deleted_at
-    FROM {bi_redshift_schema_boa_advising}.note_topics
+    FROM {bi_redshift_schema_boa_advising}.topics
   $REDSHIFT$)
-  AS note_topics (
-    note_id INTEGER,
+  AS topics (
+    topic_id INTEGER,
     topic VARCHAR(50),
     created_at TIMESTAMP WITH TIME ZONE,
     deleted_at TIMESTAMP WITH TIME ZONE
@@ -427,8 +431,7 @@ CREATE MATERIALIZED VIEW {bi_rds_schema_boa_advising}.ce3_notes_mv AS
   FROM {bi_rds_schema_boa_advising}.notes notes
   LEFT JOIN note_topics
     ON notes.note_id = note_topics.note_id
-  WHERE notes.author_dept_code = 'ZCEEE'
-  ORDER BY authors.author_name_sort, notes.created_at;
+  WHERE notes.author_dept_code = 'ZCEEE';
 
 CREATE INDEX idx_bi_ce3_notes_note_id ON {bi_rds_schema_boa_advising}.ce3_notes_mv (note_id);
 CREATE INDEX idx_bi_ce3_notes_author_uid ON {bi_rds_schema_boa_advising}.ce3_notes_mv (author_uid);
@@ -531,7 +534,7 @@ CREATE INDEX idx_bi_ce3_topics_topic ON {bi_rds_schema_boa_advising}.ce3_topics_
 CREATE MATERIALIZED VIEW {bi_rds_schema_boa_advising}.ce3_note_students_mv AS
   SELECT DISTINCT
     note_id,
-    sid,
+    sid
   FROM {bi_rds_schema_boa_advising}.notes
   WHERE author_dept_code = 'ZCEEE';
 
@@ -632,7 +635,7 @@ CREATE MATERIALIZED VIEW {bi_rds_schema_boa_advising}.ce3_student_degrees_mv AS
     degrees.degree_awarded,
     degrees.degree_date,
     degrees.plan_group,
-    degrees.plan_type,
+    degrees.plan_type
   FROM {bi_rds_schema_boa_advising}.student_degrees degrees
   JOIN ce3_students
     ON degrees.sid = ce3_students.sid;

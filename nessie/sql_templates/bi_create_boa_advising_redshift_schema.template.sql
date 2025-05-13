@@ -264,7 +264,7 @@ degrees AS (
       || ')', ' | ')
       WITHIN GROUP (ORDER BY degrees.degree_date) AS degree_list
   FROM {bi_redshift_schema_boa_advising}.student_degrees degrees
-  GROUP degrees.sid
+  GROUP BY degrees.sid
 )
 
 SELECT
