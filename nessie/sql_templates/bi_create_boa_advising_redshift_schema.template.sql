@@ -189,11 +189,16 @@ SET enable_case_sensitive_identifier TO TRUE;
 
 CREATE TABLE {bi_redshift_schema_boa_advising}.student_degrees AS
 WITH
+distinct_sids AS (
+  SELECT DISTINCT sid
+  FROM {bi_redshift_schema_boa_advising}.notes
+),
+
 degrees_super AS (
   SELECT
     sp.sid,  
     JSON_PARSE(NULLIF(JSON_EXTRACT_PATH_TEXT(sp.profile, 'sisProfile', 'degrees', TRUE), '')) AS degrees_superdata
-  FROM {bi_redshift_schema_boa_advising}.students s
+  FROM distinct_sids s
   JOIN student.student_profiles sp ON sp.sid = s.sid
 ),
 
@@ -252,15 +257,14 @@ groups AS (
 
 degrees AS (
   SELECT
-    distinct_sids.sid,
+    degrees.sid,
     LISTAGG(DISTINCT degrees.degree_awarded 
       || ' (' || degrees.plan_type 
       || COALESCE(', ' || degrees.degree_date, '') 
       || ')', ' | ')
       WITHIN GROUP (ORDER BY degrees.degree_date) AS degree_list
-  FROM distinct_sids
-  LEFT JOIN {bi_redshift_schema_boa_advising}.student_degrees degrees ON distinct_sids.sid = degrees.sid
-  GROUP BY distinct_sids.sid
+  FROM {bi_redshift_schema_boa_advising}.student_degrees degrees
+  GROUP degrees.sid
 )
 
 SELECT
