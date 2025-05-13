@@ -430,6 +430,15 @@ CREATE MATERIALIZED VIEW {bi_rds_schema_boa_advising}.ce3_notes_mv AS
   WHERE notes.author_dept_code = 'ZCEEE'
   ORDER BY authors.author_name_sort, notes.created_at;
 
+CREATE INDEX idx_bi_ce3_notes_note_id ON {bi_rds_schema_boa_advising}.ce3_notes_mv (note_id);
+CREATE INDEX idx_bi_ce3_notes_author_uid ON {bi_rds_schema_boa_advising}.ce3_notes_mv (author_uid);
+CREATE INDEX idx_bi_ce3_notes_sid ON {bi_rds_schema_boa_advising}.ce3_notes_mv (sid);
+CREATE INDEX idx_bi_ce3_notes_contact_type ON {bi_rds_schema_boa_advising}.ce3_notes_mv (contact_type);
+CREATE INDEX idx_bi_ce3_notes_create_date ON {bi_rds_schema_boa_advising}.ce3_notes_mv (created_at_date_pst);
+CREATE INDEX idx_bi_ce3_notes_set_date ON {bi_rds_schema_boa_advising}.ce3_notes_mv (set_date);
+CREATE INDEX idx_bi_ce3_notes_is_private ON {bi_rds_schema_boa_advising}.ce3_notes_mv (is_private);
+CREATE INDEX idx_bi_ce3_notes_subject ON {bi_rds_schema_boa_advising}.ce3_notes_mv (subject);
+
 
 ----------------------------------------------------------------------------------------------------
 -- CREATE MATERIALIZED VIEW: ce3_note_authors_mv
@@ -441,6 +450,9 @@ CREATE MATERIALIZED VIEW {bi_rds_schema_boa_advising}.ce3_note_authors_mv AS
     notes.author_uid
   FROM {bi_rds_schema_boa_advising}.notes notes
   WHERE notes.author_dept_code = 'ZCEEE';
+
+CREATE INDEX idx_bi_ce3_note_authors_note_id ON {bi_rds_schema_boa_advising}.ce3_note_authors_mv (note_id);
+CREATE INDEX idx_bi_ce3_note_authors_author_uid ON {bi_rds_schema_boa_advising}.ce3_note_authors_mv (author_uid);
 
 
 ----------------------------------------------------------------------------------------------------
@@ -465,6 +477,9 @@ CREATE MATERIALIZED VIEW {bi_rds_schema_boa_advising}.ce3_authors_mv AS
   LEFT JOIN ce3_authors
     ON authors.author_uid = ce3_authors.author_uid;
 
+CREATE INDEX idx_bi_ce3_authors_author_uid ON {bi_rds_schema_boa_advising}.ce3_authors_mv (author_uid);
+CREATE INDEX idx_bi_ce3_authors_sort_name ON {bi_rds_schema_boa_advising}.ce3_authors_mv (sort_name);
+
 
 ----------------------------------------------------------------------------------------------------
 -- CREATE MATERIALIZED VIEW: ce3_note_topics_mv
@@ -477,8 +492,10 @@ CREATE MATERIALIZED VIEW {bi_rds_schema_boa_advising}.ce3_note_topics_mv AS
   FROM {bi_rds_schema_boa_advising}.note_topics note_topics
   JOIN {bi_rds_schema_boa_advising}.notes notes
     ON note_topics.note_id = notes.note_id
-  WHERE notes.author_dept_code = 'ZCEEE'
-ORDER BY 1, 3;
+  WHERE notes.author_dept_code = 'ZCEEE';
+
+CREATE INDEX idx_bi_ce3_note_topics_note_id ON {bi_rds_schema_boa_advising}.ce3_note_topics_mv (note_id);
+CREATE INDEX idx_bi_ce3_note_topics_topic_id ON {bi_rds_schema_boa_advising}.ce3_note_topics_mv (topic_id);
 
 
 ----------------------------------------------------------------------------------------------------
@@ -503,6 +520,9 @@ CREATE MATERIALIZED VIEW {bi_rds_schema_boa_advising}.ce3_topics_mv AS
   JOIN ce3_topics
     ON topics.topic_id = ce3_topics.topic_id;
 
+CREATE INDEX idx_bi_ce3_topics_topic_id ON {bi_rds_schema_boa_advising}.ce3_topics_mv (topic_id);
+CREATE INDEX idx_bi_ce3_topics_topic ON {bi_rds_schema_boa_advising}.ce3_topics_mv (topic);
+
 
 ----------------------------------------------------------------------------------------------------
 -- CREATE MATERIALIZED VIEW: ce3_note_students_mv
@@ -514,6 +534,9 @@ CREATE MATERIALIZED VIEW {bi_rds_schema_boa_advising}.ce3_note_students_mv AS
     sid,
   FROM {bi_rds_schema_boa_advising}.notes
   WHERE author_dept_code = 'ZCEEE';
+
+CREATE INDEX idx_bi_ce3_note_students_note_id ON {bi_rds_schema_boa_advising}.ce3_note_students_mv (note_id);
+CREATE INDEX idx_bi_ce3_note_students_sid ON {bi_rds_schema_boa_advising}.ce3_note_students_mv (sid);
 
 
 ----------------------------------------------------------------------------------------------------
@@ -541,6 +564,9 @@ CREATE MATERIALIZED VIEW {bi_rds_schema_boa_advising}.ce3_students_mv AS
   JOIN ce3_students
     ON students.sid = ce3_students.sid;
 
+CREATE INDEX idx_bi_ce3_students_sid ON {bi_rds_schema_boa_advising}.ce3_students_mv (sid);
+CREATE INDEX idx_bi_ce3_students_sort_name ON {bi_rds_schema_boa_advising}.ce3_students_mv (sort_name);
+
 
 ----------------------------------------------------------------------------------------------------
 -- CREATE MATERIALIZED VIEW: ce3_student_cohorts_mv
@@ -561,6 +587,10 @@ CREATE MATERIALIZED VIEW {bi_rds_schema_boa_advising}.ce3_student_cohorts_mv AS
   JOIN ce3_students
     ON cohorts.sid = ce3_students.sid;
 
+CREATE INDEX idx_bi_ce3_student_cohorts_sid ON {bi_rds_schema_boa_advising}.ce3_student_cohorts_mv (sid);
+CREATE INDEX idx_bi_ce3_student_cohorts_cohort_id ON {bi_rds_schema_boa_advising}.ce3_student_cohorts_mv (cohort_id);
+CREATE INDEX idx_bi_ce3_student_cohorts_cohort_name ON {bi_rds_schema_boa_advising}.ce3_student_cohorts_mv (cohort_name);
+
 
 ----------------------------------------------------------------------------------------------------
 -- CREATE MATERIALIZED VIEW: ce3_student_groups_mv
@@ -580,6 +610,10 @@ CREATE MATERIALIZED VIEW {bi_rds_schema_boa_advising}.ce3_student_groups_mv AS
   FROM {bi_rds_schema_boa_advising}.student_groups groups
   JOIN ce3_students ce3_students
     ON groups.sid = ce3_students.sid;
+
+CREATE INDEX idx_bi_ce3_student_groups_sid ON {bi_rds_schema_boa_advising}.ce3_student_groups_mv (sid);
+CREATE INDEX idx_bi_ce3_student_groups_group_id ON {bi_rds_schema_boa_advising}.ce3_student_groups_mv (group_id);
+CREATE INDEX idx_bi_ce3_student_groups_group_name ON {bi_rds_schema_boa_advising}.ce3_student_groups_mv (group_name);
 
 
 ----------------------------------------------------------------------------------------------------
@@ -602,6 +636,9 @@ CREATE MATERIALIZED VIEW {bi_rds_schema_boa_advising}.ce3_student_degrees_mv AS
   FROM {bi_rds_schema_boa_advising}.student_degrees degrees
   JOIN ce3_students
     ON degrees.sid = ce3_students.sid;
+
+CREATE INDEX idx_bi_ce3_student_degrees_sid ON {bi_rds_schema_boa_advising}.ce3_student_degrees_mv (sid);
+CREATE INDEX idx_bi_ce3_student_degrees_degree_awarded ON {bi_rds_schema_boa_advising}.ce3_student_degrees_mv (degree_awarded);
 
 
 ----------------------------------------------------------------------------------------------------
