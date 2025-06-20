@@ -252,6 +252,201 @@ USING gin(fts_index);
 
 --
 
+DROP TABLE IF EXISTS {rds_schema_sis_advising_notes}.student_course_load_eforms CASCADE;
+
+CREATE TABLE {rds_schema_sis_advising_notes}.student_course_load_eforms
+(
+    id VARCHAR,
+    academic_career_code VARCHAR,
+    academic_standing_status VARCHAR,
+    academic_standing_description VARCHAR,
+    eform_id INTEGER,
+    eform_last_user_uid VARCHAR,
+    eform_last_user_name VARCHAR,
+    eform_orig_user_name VARCHAR,
+    eform_status VARCHAR,
+    eform_type VARCHAR,
+    request_type VARCHAR,
+    request_type_description VARCHAR,
+    requested_reduced_units VARCHAR,
+    sid VARCHAR NOT NULL,
+    term_enrolled_units VARCHAR,
+    term_id VARCHAR(4),
+    term_waitlist_units VARCHAR,
+    created_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE,
+    PRIMARY KEY (id)
+);
+
+INSERT INTO {rds_schema_sis_advising_notes}.student_course_load_eforms (
+  SELECT *
+  FROM dblink('{rds_dblink_to_redshift}',$REDSHIFT$
+    SELECT
+        id, academic_career_code, academic_standing_status, academic_standing_description, eform_id,
+        eform_last_user_uid, eform_last_user_name, eform_orig_user_name, eform_status, eform_type, request_type,
+        request_type_description, requested_reduced_units, sid, term_enrolled_units, term_id, term_waitlist_units,
+        created_at, updated_at
+    FROM {redshift_schema_edl}.student_course_load_eforms
+    ORDER BY created_at
+  $REDSHIFT$)
+  AS redshift_student_course_load_eforms (
+    id VARCHAR,
+    academic_career_code VARCHAR,
+    academic_standing_status VARCHAR,
+    academic_standing_description VARCHAR,
+    eform_id INTEGER,
+    eform_last_user_uid VARCHAR,
+    eform_last_user_name VARCHAR,
+    eform_orig_user_name VARCHAR,
+    eform_status VARCHAR,
+    eform_type VARCHAR,
+    request_type VARCHAR,
+    request_type_description VARCHAR,
+    requested_reduced_units VARCHAR,
+    sid VARCHAR,
+    term_enrolled_units VARCHAR,
+    term_id VARCHAR(4),
+    term_waitlist_units VARCHAR,
+    created_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE
+  )
+);
+
+CREATE INDEX idx_student_course_load_eforms_id ON {rds_schema_sis_advising_notes}.student_course_load_eforms(id);
+CREATE INDEX idx_student_course_load_eforms_created_at ON {rds_schema_sis_advising_notes}.student_course_load_eforms(created_at);
+CREATE INDEX idx_student_course_load_eforms_sid ON {rds_schema_sis_advising_notes}.student_course_load_eforms(sid);
+CREATE INDEX idx_student_course_load_eforms_updated_at ON {rds_schema_sis_advising_notes}.student_course_load_eforms(updated_at);
+
+--
+
+DROP MATERIALIZED VIEW IF EXISTS {rds_schema_sis_advising_notes}.student_course_load_eforms_search_index CASCADE;
+
+CREATE MATERIALIZED VIEW {rds_schema_sis_advising_notes}.student_course_load_eforms_search_index AS (
+  SELECT id, to_tsvector('english', COALESCE(eform_type || ' ' || request_type || ' ' || request_type_description, '')) AS fts_index
+  FROM {rds_schema_sis_advising_notes}.student_course_load_eforms
+);
+
+CREATE INDEX idx_student_course_load_eforms_ft_search
+ON {rds_schema_sis_advising_notes}.student_course_load_eforms_search_index
+USING gin(fts_index);
+
+--
+
+DROP TABLE IF EXISTS {rds_schema_sis_advising_notes}.student_cpp_change_eforms CASCADE;
+
+CREATE TABLE {rds_schema_sis_advising_notes}.student_cpp_change_eforms
+(
+    id VARCHAR,
+    academic_career_code VARCHAR,
+    academic_plan_code VARCHAR,
+    academic_plan_name VARCHAR,
+    academic_plan_type_description VARCHAR,
+    academic_program_code VARCHAR,
+    academic_program_name VARCHAR,
+    academic_subplan_code VARCHAR,
+    academic_subplan_name VARCHAR,
+    created_at TIMESTAMP WITH TIME ZONE,
+    degree_expected_term_id VARCHAR(4),
+    eform_action_code VARCHAR,
+    eform_action_description VARCHAR,
+    eform_id INTEGER,
+    eform_status VARCHAR,
+    eform_type VARCHAR,
+    overlap_course_1 VARCHAR,
+    overlap_course_2 VARCHAR,
+    overlap_course_3 VARCHAR,
+    overlap_course_4 VARCHAR,
+    overlap_course_5 VARCHAR,
+    requirement_term_id VARCHAR(4),
+    sid VARCHAR NOT NULL,
+    student_name VARCHAR,
+    to_academic_plan_code VARCHAR,
+    to_academic_plan_name VARCHAR,
+    to_academic_plan_requirement_term_id VARCHAR(4),
+    to_academic_program_code VARCHAR,
+    to_academic_program_name VARCHAR,
+    to_academic_subplan_code VARCHAR,
+    to_academic_subplan_name VARCHAR,
+    to_academic_subplan_requirement_term_id VARCHAR(4),
+    to_degree_expected_term_id VARCHAR(4),
+    to_requirement_term_id VARCHAR(4),
+    updated_at TIMESTAMP WITH TIME ZONE,
+    PRIMARY KEY (id)
+);
+
+INSERT INTO {rds_schema_sis_advising_notes}.student_cpp_change_eforms (
+  SELECT *
+  FROM dblink('{rds_dblink_to_redshift}',$REDSHIFT$
+    SELECT
+        id, academic_career_code, academic_plan_code, academic_plan_name, academic_plan_type_description,
+        academic_program_code, academic_program_name, academic_subplan_code, academic_subplan_name, created_at,
+        degree_expected_term_id, eform_action_code, eform_action_description, eform_id, eform_status, eform_type,
+        overlap_course_1, overlap_course_2, overlap_course_3, overlap_course_4, overlap_course_5, requirement_term_id,
+        sid, student_name, to_academic_plan_code, to_academic_plan_name, to_academic_plan_requirement_term_id,
+        to_academic_program_code, to_academic_program_name, to_academic_subplan_code, to_academic_subplan_name,
+        to_academic_subplan_requirement_term_id, to_degree_expected_term_id, to_requirement_term_id, updated_at
+    FROM {redshift_schema_edl}.student_cpp_change_eforms
+    ORDER BY created_at
+  $REDSHIFT$)
+  AS redshift_student_cpp_change_eforms (
+    id VARCHAR,
+    academic_career_code VARCHAR,
+    academic_plan_code VARCHAR,
+    academic_plan_name VARCHAR,
+    academic_plan_type_description VARCHAR,
+    academic_program_code VARCHAR,
+    academic_program_name VARCHAR,
+    academic_subplan_code VARCHAR,
+    academic_subplan_name VARCHAR,
+    created_at TIMESTAMP WITH TIME ZONE,
+    degree_expected_term_id VARCHAR(4),
+    eform_action_code VARCHAR,
+    eform_action_description VARCHAR,
+    eform_id INTEGER,
+    eform_status VARCHAR,
+    eform_type VARCHAR,
+    overlap_course_1 VARCHAR,
+    overlap_course_2 VARCHAR,
+    overlap_course_3 VARCHAR,
+    overlap_course_4 VARCHAR,
+    overlap_course_5 VARCHAR,
+    requirement_term_id VARCHAR(4),
+    sid VARCHAR,
+    student_name VARCHAR,
+    to_academic_plan_code VARCHAR,
+    to_academic_plan_name VARCHAR,
+    to_academic_plan_requirement_term_id VARCHAR(4),
+    to_academic_program_code VARCHAR,
+    to_academic_program_name VARCHAR,
+    to_academic_subplan_code VARCHAR,
+    to_academic_subplan_name VARCHAR,
+    to_academic_subplan_requirement_term_id VARCHAR(4),
+    to_degree_expected_term_id VARCHAR(4),
+    to_requirement_term_id VARCHAR(4),
+    updated_at TIMESTAMP WITH TIME ZONE
+  )
+);
+
+CREATE INDEX idx_student_cpp_change_eforms_id ON {rds_schema_sis_advising_notes}.student_cpp_change_eforms(id);
+CREATE INDEX idx_student_cpp_change_eforms_created_at ON {rds_schema_sis_advising_notes}.student_cpp_change_eforms(created_at);
+CREATE INDEX idx_student_cpp_change_eforms_sid ON {rds_schema_sis_advising_notes}.student_cpp_change_eforms(sid);
+CREATE INDEX idx_student_cpp_change_eforms_updated_at ON {rds_schema_sis_advising_notes}.student_cpp_change_eforms(updated_at);
+
+--
+
+DROP MATERIALIZED VIEW IF EXISTS {rds_schema_sis_advising_notes}.student_cpp_change_eforms_search_index CASCADE;
+
+CREATE MATERIALIZED VIEW {rds_schema_sis_advising_notes}.student_cpp_change_eforms_search_index AS (
+  SELECT id, to_tsvector('english', COALESCE(academic_plan_name || ' ' || academic_subplan_name || ' ' || to_academic_plan_name || ' ' || to_academic_subplan_name || ' ' || eform_type || ' ' || eform_action_description, '')) AS fts_index
+  FROM {rds_schema_sis_advising_notes}.student_cpp_change_eforms
+);
+
+CREATE INDEX idx_student_cpp_change_eforms_ft_search
+ON {rds_schema_sis_advising_notes}.student_cpp_change_eforms_search_index
+USING gin(fts_index);
+
+--
+
 DROP TABLE IF EXISTS {rds_schema_sis_advising_notes}.advising_appointments CASCADE;
 
 CREATE TABLE {rds_schema_sis_advising_notes}.advising_appointments (
