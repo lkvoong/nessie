@@ -429,7 +429,7 @@ CREATE MATERIALIZED VIEW {bi_rds_schema_boa_advising}.ce3_notes_mv AS
     notes.note_id,
     notes.author_uid,
     notes.sid,
-    notes.contact_type,
+    NULLIF(TRIM(notes.contact_type), '') AS contact_type,
     notes.created_at_date_pst AS create_date,
     notes.created_at_time_pst AS create_time, 
     notes.set_date,
@@ -457,24 +457,22 @@ CREATE INDEX idx_bi_ce3_notes_subject ON {bi_rds_schema_boa_advising}.ce3_notes_
 -- counts by author_id of 1) distinct student count, 2) note count (total), 3) contact type count
 ----------------------------------------------------------------------------------------------------
 DO $$
-  DECLARE 
+  DECLARE
     trow RECORD;
     sqlstr TEXT;
 
   BEGIN
-    DROP TABLE IF EXISTS {bi_rds_schema_boa_advising}.ce3_author_contacts CASCADE;
-
-    CREATE TABLE IF NOT EXISTS {bi_rds_schema_boa_advising}.ce3_author_contacts AS
+    CREATE TABLE {bi_rds_schema_boa_advising}.ce3_author_contacts AS
       SELECT
         author_uid,
         COUNT(DISTINCT sid) AS student_count,
         COUNT(*) AS note_count
       FROM {bi_rds_schema_boa_advising}.ce3_notes_mv
       GROUP BY author_uid;
-
+  
     CREATE TEMP TABLE types_temp AS
       SELECT
-        author_uid, 
+        author_uid,
         coalesce(contact_type, 'Unknown') AS contact_type,
         COUNT(contact_type) AS contact_count
       FROM {bi_rds_schema_boa_advising}.ce3_notes_mv
@@ -487,13 +485,13 @@ DO $$
         sqlstr := sqlstr || 'ADD COLUMN ' || quote_ident(trow.contact_type) || ' INTEGER';
   
         EXECUTE sqlstr;
-      
+  
         sqlstr := 'UPDATE {bi_rds_schema_boa_advising}.ce3_author_contacts ac ';
         sqlstr := sqlstr || 'SET ' || quote_ident(trow.contact_type) || ' = t.contact_count ';
         sqlstr := sqlstr || 'FROM types_temp t ';
         sqlstr := sqlstr || 'WHERE ac.author_uid = t.author_uid ';
         sqlstr := sqlstr || 'AND COALESCE(t.contact_type, ''Unknown'') = ' || quote_literal(trow.contact_type);
-
+  
         EXECUTE sqlstr;
 
       END LOOP;
@@ -509,15 +507,28 @@ $$;
 
 CREATE MATERIALIZED VIEW {bi_rds_schema_boa_advising}.ce3_authors_mv AS
   WITH ce3_authors AS (
-    SELECT DISTINCT author_uid
-    FROM {bi_rds_schema_boa_advising}.notes
-    WHERE (author_dept_code = 'ZCEEE' OR author_uid in ({bi_rds_ce3_add_users}))
+    SELECT
+      author_uid,
+      count(distinct(sid)) AS student_countd
+    FROM {bi_rds_schema_boa_advising}.ce3_notes_mv
+    GROUP by author_uid
+  ),
+
+  author_contact_types AS (
+    SELECT
+      author_uid,
+      contact_type,
+      count(contact_type) AS contact_type_count
+    FROM {bi_rds_schema_boa_advising}.ce3_notes_mv
+    GROUP BY ce3_notes_mv.author_uid
   )
 
   SELECT
     authors.author_uid,
     authors.author_name_sort AS sort_name,
-    authors.author_name AS full_name
+    authors.author_name AS full_name,
+    ce3_authors.student_countd,
+    ce3.
   FROM ce3_authors
   JOIN {bi_rds_schema_boa_advising}.authors authors
     ON ce3_authors.author_uid = authors.author_uid;
