@@ -35,7 +35,7 @@ from nessie.lib.util import resolve_sql_template
 class CurateBoaNotesSearch(BackgroundJob):
 
     def run(self):
-        app.logger.info('Starting Daily Advising Notes author names index job...')
+        app.logger.info('Starting Daily BOA Advising Notes Search Curation job...')
         app.logger.info('Executing SQL...')
         self.create_schema()
         self.import_note_authors()
@@ -45,7 +45,7 @@ class CurateBoaNotesSearch(BackgroundJob):
 
 
     def create_schema(self):
-        rds_template = 'create_bard_advising_notes_schema.template.sql'
+        rds_template = 'create_boa_app_rds_data_advising_notes_schema.template.sql'
         resolved_ddl_rds = resolve_sql_template(rds_template)
         if rds.execute(resolved_ddl_rds):
             app.logger.info('Created BOA App RDS Data Advising Notes RDS schema and indexes.')
@@ -54,11 +54,12 @@ class CurateBoaNotesSearch(BackgroundJob):
 
 
     def import_note_authors(self):
-        notes_schema = app.config['RDS_SCHEMA_ADVISING_NOTES']
+        advising_notes_schema = app.config['RDS_SCHEMA_ADVISING_NOTES']
 
+        app.logger.info('Fetching BOA advising note author attributes...')
         advisor_attributes = self._advisor_attributes_by_uid()
         if not advisor_attributes:
-            raise BackgroundJobError('Failed to fetch note author attributes.')
+            raise BackgroundJobError('Failed to fetch BOA advising note author attributes.')
 
         unique_advisor_attributes = list({adv['uid']: adv for adv in advisor_attributes}.values())
 
@@ -70,7 +71,7 @@ class CurateBoaNotesSearch(BackgroundJob):
 
             result = transaction.insert_bulk(
                 f"""
-                    INSERT INTO {notes_schema}.advising_note_authors (uid, sid, first_name, last_name, campus_email)
+                    INSERT INTO {advising_notes_schema}.advising_note_authors (uid, sid, first_name, last_name, campus_email)
                     VALUES %s
                     ON CONFLICT DO NOTHING
                 """,
@@ -78,23 +79,23 @@ class CurateBoaNotesSearch(BackgroundJob):
             )
             if result:
                 transaction.commit()
-                app.logger.info('Imported advising note author attributes.')
+                app.logger.info('Imported BOA advising note author attributes.')
             else:
                 transaction.rollback()
-                raise BackgroundJobError('Failed to import advising note author attributes.')
+                raise BackgroundJobError('Failed to import BOA advising note author attributes.')
 
     def index_advising_notes(self):
         resolved_ddl = resolve_sql_template('index_boa_notes_search_curation.template.sql')
         if rds.execute(resolved_ddl):
-            app.logger.info('Indexed advising notes.')
+            app.logger.info('Indexed BOA advising notes.')
         else:
-            raise BackgroundJobError('Failed to index advising notes.')
+            raise BackgroundJobError('Failed to index BOA advising notes.')
 
 
     def _advisor_attributes_by_uid(self):
-        bard_schema = app.config['RDS_SCHEMA_BARD']
-        advisor_uids_from_bard_notes = set(
-            [r['advisor_uid'] for r in rds.fetch(f'SELECT DISTINCT advisor_uid FROM {bard_schema}.advising_notes')],
+        boa_notes_schema = app.config['RDS_SCHEMA_BOA_APP_RDS_DATA']
+        advisor_uids_from_notes = set(
+            [r['advisor_uid'] for r in rds.fetch(f'SELECT DISTINCT advisor_uid FROM {boa_notes_schema}.advising_notes')],
         )
-        advisor_uids = list(advisor_uids_from_bard_notes)
+        advisor_uids = list(advisor_uids_from_notes)
         return calnet.client(app).search_uids(advisor_uids)

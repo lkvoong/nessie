@@ -45,7 +45,7 @@ ON CONFLICT DO NOTHING;
 
 ----------------------------------------------------------------------------------------------------
 -- Create curated advising notes tables and indexes
--- Union {rds_schema_advising_notes} and {rds_schema_bard}
+-- Union {rds_schema_advising_notes} and {rds_schema_boa_app_rds_data}
 --   as separate tables for adding incremental data.
 ----------------------------------------------------------------------------------------------------
 
@@ -86,7 +86,7 @@ SELECT
   advisor_uid AS created_by,
   created_at,
   updated_at
-FROM {rds_schema_bard}.advising_notes
+FROM {rds_schema_boa_app_rds_data}.advising_notes
 );
 
 CREATE INDEX idx_advising_notes_curated_id ON {rds_schema_advising_notes}.advising_notes_curated (id);
@@ -108,7 +108,7 @@ CREATE TABLE {rds_schema_advising_notes}.advising_notes_search_index_curated AS 
   FROM {rds_schema_advising_notes}.advising_notes_search_index
   UNION
   SELECT id, fts_index
-  FROM {rds_schema_bard}.advising_notes_search_index
+  FROM {rds_schema_boa_app_rds_data}.advising_notes_search_index
 );
 
 CREATE INDEX idx_advising_notes_ft_search_curated

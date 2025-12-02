@@ -31,14 +31,14 @@
 -- Create schema, grant usage, and alter default privileges
 -----------------------------------------------------------------------------------------------------
 
-CREATE SCHEMA IF NOT EXISTS {rds_schema_bard};
+CREATE SCHEMA IF NOT EXISTS {rds_schema_boa_app_rds_data};
 
 GRANT USAGE
-  ON SCHEMA {rds_schema_bard}
+  ON SCHEMA {rds_schema_boa_app_rds_data}
   TO {rds_app_boa_user};
 
 ALTER DEFAULT PRIVILEGES
-  IN SCHEMA {rds_schema_bard}
+  IN SCHEMA {rds_schema_boa_app_rds_data}
   GRANT SELECT ON TABLES TO {rds_app_boa_user};
 
 
@@ -60,9 +60,9 @@ BEGIN TRANSACTION;
 --   exclude drafts, deleted records, and records not associated with a student
 -----------------------------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS {rds_schema_bard}.advising_notes CASCADE;
+DROP TABLE IF EXISTS {rds_schema_boa_app_rds_data}.advising_notes CASCADE;
 
-CREATE TABLE {rds_schema_bard}.advising_notes (
+CREATE TABLE {rds_schema_boa_app_rds_data}.advising_notes (
   id VARCHAR PRIMARY KEY,
   sid VARCHAR NOT NULL,
   boa_id VARCHAR NOT NULL,
@@ -77,7 +77,7 @@ CREATE TABLE {rds_schema_bard}.advising_notes (
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
-INSERT INTO {rds_schema_bard}.advising_notes (
+INSERT INTO {rds_schema_boa_app_rds_data}.advising_notes (
   SELECT *
   FROM dblink('{rds_dblink_to_redshift}',
     $REDSHIFT$
@@ -121,13 +121,13 @@ INSERT INTO {rds_schema_bard}.advising_notes (
 -----------------------------------------------------------------------------------------------------
 
 CREATE INDEX idx_advising_notes_sid
-  ON {rds_schema_bard}.advising_notes (sid);
+  ON {rds_schema_boa_app_rds_data}.advising_notes (sid);
 
 CREATE INDEX idx_advising_notes_advisor_uid
-  ON {rds_schema_bard}.advising_notes (advisor_uid);
+  ON {rds_schema_boa_app_rds_data}.advising_notes (advisor_uid);
 
 CREATE INDEX idx_advising_notes_updated_at
-  ON {rds_schema_bard}.advising_notes (updated_at);
+  ON {rds_schema_boa_app_rds_data}.advising_notes (updated_at);
 
 
 -----------------------------------------------------------------------------------------------------
@@ -137,9 +137,9 @@ CREATE INDEX idx_advising_notes_updated_at
 --   exclude deleted note_topic records
 -----------------------------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS {rds_schema_bard}.advising_note_topics CASCADE;
+DROP TABLE IF EXISTS {rds_schema_boa_app_rds_data}.advising_note_topics CASCADE;
 
-CREATE TABLE {rds_schema_bard}.advising_note_topics (
+CREATE TABLE {rds_schema_boa_app_rds_data}.advising_note_topics (
   id VARCHAR NOT NULL,
   sid VARCHAR NOT NULL,
   boa_id VARCHAR NOT NULL,
@@ -147,13 +147,13 @@ CREATE TABLE {rds_schema_bard}.advising_note_topics (
   PRIMARY KEY (id, topic)
 );
 
-INSERT INTO {rds_schema_bard}.advising_note_topics (
+INSERT INTO {rds_schema_boa_app_rds_data}.advising_note_topics (
   SELECT DISTINCT
     n.id,
     n.sid,
     n.boa_id,
     rs_nt.topic
-  FROM {rds_schema_bard}.advising_notes n
+  FROM {rds_schema_boa_app_rds_data}.advising_notes n
   JOIN dblink('{rds_dblink_to_redshift}',
     $REDSHIFT$
       SELECT DISTINCT note_id, topic
@@ -169,9 +169,9 @@ INSERT INTO {rds_schema_bard}.advising_note_topics (
 -- Create materialized view advising_notes_search_index and GIN index
 -----------------------------------------------------------------------------------------------------
 
-DROP MATERIALIZED VIEW IF EXISTS {rds_schema_bard}.advising_notes_search_index CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS {rds_schema_boa_app_rds_data}.advising_notes_search_index CASCADE;
 
-CREATE MATERIALIZED VIEW {rds_schema_bard}.advising_notes_search_index AS (
+CREATE MATERIALIZED VIEW {rds_schema_boa_app_rds_data}.advising_notes_search_index AS (
   SELECT
     n.id,
     TO_TSVECTOR(
@@ -181,12 +181,12 @@ CREATE MATERIALIZED VIEW {rds_schema_bard}.advising_notes_search_index AS (
         ELSE COALESCE(t.topic || ' ', '') || n.advisor_first_name || ' ' || n.advisor_last_name
       END
     ) AS fts_index
-  FROM {rds_schema_bard}.advising_notes n
-  LEFT OUTER JOIN {rds_schema_bard}.advising_note_topics t ON n.id = t.id
+  FROM {rds_schema_boa_app_rds_data}.advising_notes n
+  LEFT OUTER JOIN {rds_schema_boa_app_rds_data}.advising_note_topics t ON n.id = t.id
 );
 
 CREATE INDEX idx_advising_notes_ft_search
-  ON {rds_schema_bard}.advising_notes_search_index
+  ON {rds_schema_boa_app_rds_data}.advising_notes_search_index
   USING gin (fts_index);
 
 COMMIT TRANSACTION;
