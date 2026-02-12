@@ -155,9 +155,9 @@ CREATE TABLE {rds_schema_boa_app_rds_data}.advising_notes_delta (
 -----------------------------------------------------------------------------------------------------
 
 CREATE OR REPLACE VIEW {rds_schema_boa_app_rds_data}.advising_notes_vw AS
-  SELECT * from rds_schema_boa_app_rds_data}.advising_notes_nightly
+  SELECT * from {rds_schema_boa_app_rds_data}.advising_notes_nightly
   UNION
-  SELECT * from rds_schema_boa_app_rds_data}.advising_notes_delta;
+  SELECT * from {rds_schema_boa_app_rds_data}.advising_notes_delta;
 
 
 -----------------------------------------------------------------------------------------------------
@@ -227,9 +227,9 @@ CREATE TABLE {rds_schema_boa_app_rds_data}.advising_note_topics_delta (
 -----------------------------------------------------------------------------------------------------
 
 CREATE OR REPLACE VIEW {rds_schema_boa_app_rds_data}.advising_note_topics_vw AS
-  SELECT * from rds_schema_boa_app_rds_data}.advising_note_topics_nightly
+  SELECT * from {rds_schema_boa_app_rds_data}.advising_note_topics_nightly
   UNION
-  SELECT * from rds_schema_boa_app_rds_data}.advising_note_topics_delta;
+  SELECT * from {rds_schema_boa_app_rds_data}.advising_note_topics_delta;
 
 
 -----------------------------------------------------------------------------------------------------
