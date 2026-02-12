@@ -218,6 +218,8 @@ CREATE INDEX advising_notes_topics_nightly_topic_idx
 -- Create empty table advising_note_topics_delta like advising_note_topics_nightly with indexes
 -----------------------------------------------------------------------------------------------------
 
+DROP TABLE IF EXISTS {rds_schema_boa_app_rds_data}.advising_note_topics_delta CASCADE;
+
 CREATE TABLE {rds_schema_boa_app_rds_data}.advising_note_topics_delta (
   LIKE {rds_schema_boa_app_rds_data}.advising_note_topics_nightly INCLUDING ALL);
 
@@ -289,6 +291,8 @@ CREATE INDEX author_depts_dept_code_idx
 -- Create table advising_notes_search_index_nightly
 -----------------------------------------------------------------------------------------------------
 
+DROP TABLE IF EXISTS {rds_schema_boa_app_rds_data}.advising_notes_search_index_nightly CASCADE;
+
 CREATE TABLE {rds_schema_boa_app_rds_data}.advising_notes_search_index_nightly AS
   SELECT
     n.id,
@@ -315,6 +319,8 @@ CREATE INDEX advising_notes_search_index_nightly_fts_index_idx
 -----------------------------------------------------------------------------------------------------
 -- Create empty table advising_notes_search_index_delta like advising_notes_search_index_nightly with index
 -----------------------------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS {rds_schema_boa_app_rds_data}.advising_notes_search_index_delta CASCADE;
 
 CREATE TABLE {rds_schema_boa_app_rds_data}.advising_notes_search_index_delta (
   LIKE {rds_schema_boa_app_rds_data}.advising_notes_search_index_nightly INCLUDING ALL);
