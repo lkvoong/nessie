@@ -63,10 +63,14 @@ TABLE PROPERTIES ('skip.header.line.count'='1');
 
 DROP SCHEMA IF EXISTS {redshift_schema_data_science_advising_internal} CASCADE;
 CREATE SCHEMA {redshift_schema_data_science_advising_internal};
+
 GRANT USAGE ON SCHEMA {redshift_schema_data_science_advising_internal} TO GROUP {redshift_app_boa_user}_group;
-ALTER default PRIVILEGES IN SCHEMA {redshift_schema_data_science_advising_internal} GRANT SELECT ON TABLES TO GROUP {redshift_app_boa_user}_group;
+ALTER DEFAULT PRIVILEGES IN SCHEMA {redshift_schema_data_science_advising_internal}
+    GRANT SELECT ON TABLES TO GROUP {redshift_app_boa_user}_group;
+
 GRANT USAGE ON SCHEMA {redshift_schema_data_science_advising_internal} TO GROUP {redshift_dblink_group};
-ALTER DEFAULT PRIVILEGES IN SCHEMA {redshift_schema_data_science_advising_internal} GRANT SELECT ON TABLES TO GROUP {redshift_dblink_group};
+ALTER DEFAULT PRIVILEGES IN SCHEMA {redshift_schema_data_science_advising_internal}
+    GRANT SELECT ON TABLES TO GROUP {redshift_dblink_group};
 
 --------------------------------------------------------------------
 -- Internal tables
@@ -76,7 +80,7 @@ CREATE TABLE {redshift_schema_data_science_advising_internal}.advising_notes
 SORTKEY (id)
 AS (
     SELECT
-      n.student_id || '-' || TO_CHAR(TO_TIMESTAMP(n.timestamp, 'MM/DD/YYYY HH:MI:SS'), 'YYYYMMDDHHMISS') AS id,
+      'ds-' || n.student_id || '-' || TO_CHAR(TO_TIMESTAMP(n.timestamp, 'MM/DD/YYYY HH:MI:SS'), 'YYYYMMDDHHMISS') AS id,
       n.student_id AS sid,
       n.student_first_name,
       n.student_last_name,

@@ -74,10 +74,14 @@ LOCATION '{loch_s3_e_i_aggregated_topics}';
 
 DROP SCHEMA IF EXISTS {redshift_schema_e_i_advising_notes_internal} CASCADE;
 CREATE SCHEMA {redshift_schema_e_i_advising_notes_internal};
+
 GRANT USAGE ON SCHEMA {redshift_schema_e_i_advising_notes_internal} TO GROUP {redshift_app_boa_user}_group;
-ALTER default PRIVILEGES IN SCHEMA {redshift_schema_e_i_advising_notes_internal} GRANT SELECT ON TABLES TO GROUP {redshift_app_boa_user}_group;
+ALTER DEFAULT PRIVILEGES IN SCHEMA {redshift_schema_e_i_advising_notes_internal}
+    GRANT SELECT ON TABLES TO GROUP {redshift_app_boa_user}_group;
+
 GRANT USAGE ON SCHEMA {redshift_schema_e_i_advising_notes_internal} TO GROUP {redshift_dblink_group};
-ALTER DEFAULT PRIVILEGES IN SCHEMA {redshift_schema_e_i_advising_notes_internal} GRANT SELECT ON TABLES TO GROUP {redshift_dblink_group};
+ALTER DEFAULT PRIVILEGES IN SCHEMA {redshift_schema_e_i_advising_notes_internal}
+    GRANT SELECT ON TABLES TO GROUP {redshift_dblink_group};
 
 --------------------------------------------------------------------
 -- Internal tables
@@ -87,7 +91,7 @@ CREATE TABLE {redshift_schema_e_i_advising_notes_internal}.advising_notes
 SORTKEY (id)
 AS (
     SELECT
-      studentSid || '-' || id AS id,
+      'e_i-' || studentSid || '-' || id AS id,
       id AS e_i_id,
       studentSid AS sid,
       studentFirstName AS student_first_name,

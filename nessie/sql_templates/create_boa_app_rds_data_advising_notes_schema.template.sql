@@ -51,8 +51,8 @@ BEGIN TRANSACTION;
 
 
 -----------------------------------------------------------------------------------------------------
--- Drop and create table advising_notes
---   prefix generated sid || '-' || id with 'boa-' since sid/id combination produces 2 dups with E&I
+-- Drop and create table advising_notes_nightly
+--   generate 'boa-' || sid || '-' || id as id since (sid || '-' || id) produces 2 duplicates with E&I
 --   author name changes over time as it changes in CalNet
 --   first_name and last_name are parsed from notes.author_name
 --     remove everything following comma, if exists
@@ -62,12 +62,12 @@ BEGIN TRANSACTION;
 --   exclude drafts, deleted records, and records not associated with a student
 -----------------------------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS {rds_schema_boa_app_rds_data}.advising_notes CASCADE;
+DROP TABLE IF EXISTS {rds_schema_boa_app_rds_data}.advising_notes_nightly CASCADE;
 
-CREATE TABLE {rds_schema_boa_app_rds_data}.advising_notes (
+CREATE TABLE {rds_schema_boa_app_rds_data}.advising_notes_nightly (
   id VARCHAR PRIMARY KEY,
-  sid VARCHAR NOT NULL,
   boa_id VARCHAR NOT NULL,
+  sid VARCHAR NOT NULL,
   advisor_uid VARCHAR,
   author_name VARCHAR,
   advisor_first_name VARCHAR,
@@ -81,17 +81,17 @@ CREATE TABLE {rds_schema_boa_app_rds_data}.advising_notes (
 
 
 -----------------------------------------------------------------------------------------------------
--- Populate table advising_notes from Redshift
+-- Populate table advising_notes_nightly from Redshift
 -----------------------------------------------------------------------------------------------------
 
-INSERT INTO {rds_schema_boa_app_rds_data}.advising_notes (
+INSERT INTO {rds_schema_boa_app_rds_data}.advising_notes_nightly (
   SELECT *
   FROM dblink('{rds_dblink_to_redshift}',
     $REDSHIFT$
       SELECT
         'boa-' || sid || '-' || id AS id,
-        sid,
         id::VARCHAR AS boa_id,
+        sid,
         author_uid AS advisor_uid,
         TRIM(author_name) AS author_name,
         REGEXP_REPLACE(REGEXP_REPLACE(TRIM(author_name), ',.*$', ''), '^(.+) ([^ ]+)$', '$1') AS advisor_first_name,
@@ -108,8 +108,8 @@ INSERT INTO {rds_schema_boa_app_rds_data}.advising_notes (
     $REDSHIFT$)
   AS rs_notes (
     id VARCHAR,
-    sid VARCHAR,
     boa_id VARCHAR,
+    sid VARCHAR,
     advisor_uid VARCHAR,
     author_name VARCHAR,
     advisor_first_name VARCHAR,
@@ -124,51 +124,51 @@ INSERT INTO {rds_schema_boa_app_rds_data}.advising_notes (
 
 
 -----------------------------------------------------------------------------------------------------
--- Create indexes on table advising_notes
+-- Create indexes on table advising_notes_nightly
 -----------------------------------------------------------------------------------------------------
 
-CREATE INDEX advising_notes_sid_idx
-  ON {rds_schema_boa_app_rds_data}.advising_notes (sid);
+CREATE INDEX advising_notes_nightly_boa_id_idx
+  ON {rds_schema_boa_app_rds_data}.advising_notes_nightly (boa_id);
 
-CREATE INDEX advising_notes_boa_id_idx
-  ON {rds_schema_boa_app_rds_data}.advising_notes (boa_id);
+CREATE INDEX advising_notes_nightly_sid_idx
+  ON {rds_schema_boa_app_rds_data}.advising_notes_nightly (sid);
 
-CREATE INDEX advising_notes_advisor_uid_idx
-  ON {rds_schema_boa_app_rds_data}.advising_notes (advisor_uid);
+CREATE INDEX advising_notes_nightly_advisor_uid_idx
+  ON {rds_schema_boa_app_rds_data}.advising_notes_nightly (advisor_uid);
 
-CREATE INDEX advising_notes_updated_at_idx
-  ON {rds_schema_boa_app_rds_data}.advising_notes (updated_at);
+CREATE INDEX advising_notes_nightly_updated_at_idx
+  ON {rds_schema_boa_app_rds_data}.advising_notes_nightly (updated_at);
 
 
 -----------------------------------------------------------------------------------------------------
--- Drop and create table advising_note_topics
+-- Drop and create table advising_note_topics_nightly
 --   use generated id ('boa-' || sid || '-' || id) from advising_notes as identifier
 --   remove duplicate topics for each note
 --   exclude deleted note_topics records
 -----------------------------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS {rds_schema_boa_app_rds_data}.advising_note_topics CASCADE;
+DROP TABLE IF EXISTS {rds_schema_boa_app_rds_data}.advising_note_topics_nightly CASCADE;
 
-CREATE TABLE {rds_schema_boa_app_rds_data}.advising_note_topics (
+CREATE TABLE {rds_schema_boa_app_rds_data}.advising_note_topics_nightly (
   id VARCHAR NOT NULL,
-  sid VARCHAR NOT NULL,
   boa_id VARCHAR NOT NULL,
+  sid VARCHAR NOT NULL,
   topic VARCHAR NOT NULL,
   PRIMARY KEY (id, topic)
 );
 
 
 -----------------------------------------------------------------------------------------------------
--- Populate table advising_note_topics from Redshift
+-- Populate table advising_note_topics_nightly from Redshift
 -----------------------------------------------------------------------------------------------------
 
-INSERT INTO {rds_schema_boa_app_rds_data}.advising_note_topics (
+INSERT INTO {rds_schema_boa_app_rds_data}.advising_note_topics_nightly (
   SELECT DISTINCT
     n.id,
-    n.sid,
     n.boa_id,
+    n.sid,
     rs_nt.topic
-  FROM {rds_schema_boa_app_rds_data}.advising_notes n
+  FROM {rds_schema_boa_app_rds_data}.advising_notes_nightly n
   JOIN dblink('{rds_dblink_to_redshift}',
     $REDSHIFT$
       SELECT DISTINCT note_id, topic
@@ -181,33 +181,17 @@ INSERT INTO {rds_schema_boa_app_rds_data}.advising_note_topics (
 
 
 -----------------------------------------------------------------------------------------------------
--- Create indexes on table advising_note_topics
+-- Create indexes on table advising_note_topics_nightly
 -----------------------------------------------------------------------------------------------------
 
-CREATE INDEX advising_notes_topics_sid_idx
-  ON {rds_schema_boa_app_rds_data}.advising_note_topics (sid);
+CREATE INDEX advising_notes_topics_nightly_boa_id_idx
+  ON {rds_schema_boa_app_rds_data}.advising_note_topics_nightly (boa_id);
 
-CREATE INDEX advising_notes_topics_boa_id_idx
-  ON {rds_schema_boa_app_rds_data}.advising_note_topics (boa_id);
+CREATE INDEX advising_notes_topics_nightly_sid_idx
+  ON {rds_schema_boa_app_rds_data}.advising_note_topics_nightly (sid);
 
-CREATE INDEX advising_notes_topics_topic_idx
-  ON {rds_schema_boa_app_rds_data}.advising_note_topics (topic);
-
-
------------------------------------------------------------------------------------------------------
--- Drop and create table advising_note_topics_pending
---   for parking orphan topics until parent note arrives
------------------------------------------------------------------------------------------------------
-
-DROP TABLE IF EXISTS {rds_schema_boa_app_rds_data}.advising_note_topics_pending CASCADE;
-
-CREATE TABLE {rds_schema_boa_app_rds_data}.advising_note_topics_pending (
-  boa_id VARCHAR NOT NULL,
-  topic VARCHAR NOT NULL,
-  author_uid VARCHAR,
-  received_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-  PRIMARY KEY (boa_id, topic)
-);
+CREATE INDEX advising_notes_topics_nightly_topic_idx
+  ON {rds_schema_boa_app_rds_data}.advising_note_topics_nightly (topic);
 
 
 -----------------------------------------------------------------------------------------------------
@@ -264,16 +248,16 @@ CREATE INDEX author_depts_dept_code_idx
 
 
 -----------------------------------------------------------------------------------------------------
--- Create table advising_notes_search_index
---   aggregate topics as space delimited list to prevent duplicate note id rows
+-- Create table advising_notes_search_index_nightly
+--   aggregate topics as space delimited list to prevent duplicate note_id rows
 -----------------------------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS {rds_schema_boa_app_rds_data}.advising_notes_search_index CASCADE;
+DROP TABLE IF EXISTS {rds_schema_boa_app_rds_data}.advising_notes_search_index_nightly CASCADE;
 
-CREATE TABLE {rds_schema_boa_app_rds_data}.advising_notes_search_index AS
+CREATE TABLE {rds_schema_boa_app_rds_data}.advising_notes_search_index_nightly AS
   WITH topics AS (
     SELECT id, STRING_AGG(DISTINCT topic, ' ' ORDER BY topic) AS topics
-    FROM {rds_schema_boa_app_rds_data}.advising_note_topics
+    FROM {rds_schema_boa_app_rds_data}.advising_note_topics_nightly
     GROUP BY id
   )
   SELECT
@@ -284,57 +268,17 @@ CREATE TABLE {rds_schema_boa_app_rds_data}.advising_notes_search_index AS
       COALESCE(n.note_body, '') || ' ' ||
       COALESCE(t.topics, '') || ' ' || n.author_name
     ) AS fts_index
-  FROM {rds_schema_boa_app_rds_data}.advising_notes n
+  FROM {rds_schema_boa_app_rds_data}.advising_notes_nightly n
   LEFT OUTER JOIN topics t ON n.id = t.id;
 
 
 -----------------------------------------------------------------------------------------------------
--- Create indexes on table advising_notes_search_index
+-- Create indexes on table advising_notes_search_index_nightly
 -----------------------------------------------------------------------------------------------------
 
-CREATE INDEX advising_notes_search_index_fts_index_idx
-  ON {rds_schema_boa_app_rds_data}.advising_notes_search_index
-  USING GIN (fts_index);
-
-CREATE UNIQUE INDEX advising_notes_search_index_pkey
-  ON {rds_schema_boa_app_rds_data}.advising_notes_search_index(id text_ops);
-
-
------------------------------------------------------------------------------------------------------
--- Create advising_notes_cdc_log
---   change data capture log table
---   audit log for direct-table CDC events (replay and integrity checks)'
------------------------------------------------------------------------------------------------------
-
-DROP TABLE IF EXISTS {rds_schema_boa_app_rds_data}.advising_notes_cdc_log CASCADE;
-
-CREATE TABLE {rds_schema_boa_app_rds_data}.advising_notes_cdc_log (
-  log_id BIGSERIAL PRIMARY KEY,
-  received_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-  applied_at TIMESTAMP WITH TIME ZONE,
-  event_id VARCHAR NOT NULL UNIQUE,
-  table_name VARCHAR NOT NULL,
-  operation VARCHAR NOT NULL,
-  effective_operation VARCHAR NOT NULL,
-  boa_id VARCHAR,
-  composite_id VARCHAR,
-  payload JSONB NOT NULL,
-  prepared_record JSONB,
-  apply_status VARCHAR NOT NULL,
-  error_message TEXT,
-  handler_version VARCHAR
-);
-
-
------------------------------------------------------------------------------------------------------
--- Create indexes on table advising_notes_cdc_log
------------------------------------------------------------------------------------------------------
-
-CREATE INDEX advising_notes_cdc_log_composite_id_idx
-  ON {rds_schema_boa_app_rds_data}.advising_notes_cdc_log (composite_id, received_at);
-
-CREATE INDEX advising_notes_cdc_log_apply_status_idx
-  ON {rds_schema_boa_app_rds_data}.advising_notes_cdc_log (apply_status, received_at);
+CREATE INDEX advising_notes_search_index_nightly_fts_index_idx
+  ON {rds_schema_boa_app_rds_data}.advising_notes_search_index_nightly
+  USING gin (fts_index);
 
 
 -----------------------------------------------------------------------------------------------------

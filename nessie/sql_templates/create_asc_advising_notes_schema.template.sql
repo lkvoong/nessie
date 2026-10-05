@@ -87,10 +87,14 @@ LOCATION '{asc_data_sftp_path}/incremental';
 
 DROP SCHEMA IF EXISTS {redshift_schema_asc_advising_notes_internal} CASCADE;
 CREATE SCHEMA {redshift_schema_asc_advising_notes_internal};
+
 GRANT USAGE ON SCHEMA {redshift_schema_asc_advising_notes_internal} TO GROUP {redshift_app_boa_user}_group;
-ALTER default PRIVILEGES IN SCHEMA {redshift_schema_asc_advising_notes_internal} GRANT SELECT ON TABLES TO GROUP {redshift_app_boa_user}_group;
+ALTER DEFAULT PRIVILEGES IN SCHEMA {redshift_schema_asc_advising_notes_internal}
+    GRANT SELECT ON TABLES TO GROUP {redshift_app_boa_user}_group;
+
 GRANT USAGE ON SCHEMA {redshift_schema_asc_advising_notes_internal} TO GROUP {redshift_dblink_group};
-ALTER DEFAULT PRIVILEGES IN SCHEMA {redshift_schema_asc_advising_notes_internal} GRANT SELECT ON TABLES TO GROUP {redshift_dblink_group};
+ALTER DEFAULT PRIVILEGES IN SCHEMA {redshift_schema_asc_advising_notes_internal}
+    GRANT SELECT ON TABLES TO GROUP {redshift_dblink_group};
 
 --------------------------------------------------------------------
 -- Internal tables
@@ -100,7 +104,7 @@ CREATE TABLE {redshift_schema_asc_advising_notes_internal}.advising_notes
 SORTKEY (id)
 AS (
     SELECT
-      annbn.studentSid || '-' || annbn.id AS id,
+      'asc-' || annbn.studentSid || '-' || annbn.id AS id,
       annbn.id AS asc_id,
       annbn.studentSid AS sid,
       annbn.studentFirstName AS student_first_name,
@@ -116,7 +120,7 @@ AS (
     FROM {redshift_schema_asc_advising_notes}.advising_notes_no_bodies annb, annb.notes annbn
     UNION
     SELECT
-      n.studentSid || '-' || n.id AS id,
+      'asc-' || n.studentSid || '-' || n.id AS id,
       n.id AS asc_id,
       n.studentSid AS sid,
       n.studentFirstName AS student_first_name,
@@ -136,14 +140,14 @@ CREATE TABLE {redshift_schema_asc_advising_notes_internal}.advising_note_topics
 SORTKEY (id)
 AS (
     SELECT DISTINCT
-      annbn.studentSid || '-' || annbn.id AS id,
+      'asc-' || annbn.studentSid || '-' || annbn.id AS id,
       annbn.id AS asc_id,
       annbn.studentSid AS sid,
       annbnt AS topic
     FROM {redshift_schema_asc_advising_notes}.advising_notes_no_bodies annb, annb.notes annbn, annbn.topics annbnt 
     UNION
     SELECT DISTINCT
-      n.studentSid || '-' || n.id AS id,
+      'asc-' || n.studentSid || '-' || n.id AS id,
       n.id AS asc_id,
       n.studentSid AS sid,
       t AS topic

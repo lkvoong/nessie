@@ -65,10 +65,14 @@ TABLE PROPERTIES ('skip.header.line.count'='1', 'serialization.null.format'='');
 
 DROP SCHEMA IF EXISTS {redshift_schema_eop_advising_notes_internal} CASCADE;
 CREATE SCHEMA {redshift_schema_eop_advising_notes_internal};
+
 GRANT USAGE ON SCHEMA {redshift_schema_eop_advising_notes_internal} TO GROUP {redshift_app_boa_user}_group;
-ALTER default PRIVILEGES IN SCHEMA {redshift_schema_eop_advising_notes_internal} GRANT SELECT ON TABLES TO GROUP {redshift_app_boa_user}_group;
+ALTER DEFAULT PRIVILEGES IN SCHEMA {redshift_schema_eop_advising_notes_internal}
+    GRANT SELECT ON TABLES TO GROUP {redshift_app_boa_user}_group;
+
 GRANT USAGE ON SCHEMA {redshift_schema_eop_advising_notes_internal} TO GROUP {redshift_dblink_group};
-ALTER DEFAULT PRIVILEGES IN SCHEMA {redshift_schema_eop_advising_notes_internal} GRANT SELECT ON TABLES TO GROUP {redshift_dblink_group};
+ALTER DEFAULT PRIVILEGES IN SCHEMA {redshift_schema_eop_advising_notes_internal}
+    GRANT SELECT ON TABLES TO GROUP {redshift_dblink_group};
 
 --------------------------------------------------------------------
 -- Internal tables
@@ -78,7 +82,7 @@ CREATE TABLE {redshift_schema_eop_advising_notes_internal}.advising_notes
 SORTKEY (sid)
 AS (
     SELECT
-      'eop_advising_note_' || (ROW_NUMBER() OVER (ORDER BY meeting_date)) AS id,
+      'eop-' || student_sid || '-' || (ROW_NUMBER() OVER (ORDER BY meeting_date)) AS id,
       student_sid AS sid,
       student_name,
       advisor_uid,
